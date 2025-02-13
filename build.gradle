@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.meowmeowland'
+version = '1.0'
+
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Add your dependencies here
+}
+
+application {
+    // Fully qualified main class from [`com.meowmeowland.Main`](src/main/java/com/meowmeowland/Main.java)
+    mainClass = 'com.meowmeowland.Main'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+    }
+}
