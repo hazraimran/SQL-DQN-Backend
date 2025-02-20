@@ -1,0 +1,11 @@
+{
+  "name": "storytelling",
+  "version": "1.0.0",
+  "dependencies": {
+    "@types/node": "^16.11.15",
+    "mongoose": "^8.10.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
