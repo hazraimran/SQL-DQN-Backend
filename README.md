@@ -10,7 +10,8 @@ This is a simple game for demonstration purpose that I created for CS7675. The g
 ## Game Design
 
 ## To-Do
+- [ ] Database: Create a database to store game data.
+- [ ] Database: Store the `uri` of database in `.env` file.
 - [ ] Modify `PuzzleGenerator.ts` by switching to a non-naive algorithm for generating puzzles.
-- [ ] Store the `uri` of database in `.env` file.
 - [ ] Change `GameData.model.ts` to align with the purpose of this game.
 - [ ] Define how to "encode" a `GameState` to a single integer index in `QLearning.ts`.
