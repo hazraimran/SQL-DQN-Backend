@@ -1,105 +1,87 @@
-import connectDB from "./database/db";
-import { SQLGameEnvironment } from "./environment/SQLGameEnvironment";
-import { QLearningAgent } from "./rl/QLearningAgent";
+// src/index.ts
+
+import { MerchantStoryEnv } from "./environment/MerchantStoryEnv";
+import { DQNAgent } from "./rl/DQNAgent";
+import { MerchantStoryState } from "./model/types";
+import { DIFFICULTIES } from "./config/difficulties";
+import * as tf from "@tensorflow/tfjs-node";
 
 /**
- * Minimal demonstration of the RL training loop in TypeScript.
- * This does not handle concurrency or a real-time multi-user interface.
+ * Offline demonstration of multi-difficulty progression:
+ * For each difficulty, we run episodes until the user meets correctness threshold.
+ * If correctness < threshold, we re-run the same difficulty. Then move on.
  */
 
 async function main() {
-  // Connect to MongoDB (optional in MVP, but included to illustrate usage)
-  await connectDB();
+  const userFeatureDim = 2;
+  const maxBranches = 6; // the largest branch set from the graph (some nodes have up to 2 next edges)
+  const inputDim = 1 + userFeatureDim + 2; // branchId + userFeatures + (timeSpent + correctness)
+  // We'll store state as: [branchId, userFeatures..., timeSpent, correctness]
+  // => number of userFeatures = 2
+  // => total = 1 + 2 + 2 = 5
+  // We'll do 6 as the output dimension if we want to be safe (some nodes won't need all 6)
 
-  // Create environment
-  const env = new SQLGameEnvironment();
+  const outputDim = 6;    
+  const agent = new DQNAgent(inputDim, outputDim, 2000 /* replayCapacity */);
 
-  // We must define how many states exist, for Q-table dimensions:
-  // role(2) * stage(6) * skill(6) * time(201) * diff(3) = 2 * 6 * 6 * 201 * 3 = 43236
-  const numStates = 2 * 6 * 6 * 201 * 3;
-  const numActions = 4; // as defined in environment (0..3)
+  const trainingBatchSize = 16;
 
-  // RL hyperparams
-  const alpha = 0.1;
-  const gamma = 0.95;
-  const epsilon = 1.0;
-  const epsilonDecay = 0.99;
-  const epsilonMin = 0.01;
+  for (let diffIndex = 0; diffIndex < DIFFICULTIES.length; diffIndex++) {
+    const config = DIFFICULTIES[diffIndex];
+    console.log(`Starting difficulty: ${config.name}`);
 
-  // Create agent
-  const agent = new QLearningAgent(
-    env,
-    numStates,
-    numActions,
-    alpha,
-    gamma,
-    epsilon,
-    epsilonDecay,
-    epsilonMin
-  );
+    // We'll keep trying episodes until correctness meets threshold or we do 5 tries max
+    let success = false;
+    const maxTries = 5;
+    let tryCount = 0;
 
-  // Train
-  const episodes = 1000;
-  console.log("Training Q-Learning agent for", episodes, "episodes...");
-  agent.train(episodes);
+    while (!success && tryCount < maxTries) {
+      tryCount++;
+      console.log(` Episode #${tryCount} in ${config.name}`);
+      // create environment
+      const env = new MerchantStoryEnv(userFeatureDim, config.maxSteps);
+      let state = env.reset();
+      let done = false;
 
-  console.log("Training done.");
+      while (!done) {
+        const action = agent.chooseAction(state);
 
-  // DEMO RUN: illustrate how we might do a quick "game" run
-  // with best actions from the Q-table (greedy).
-  const testRuns = 3;
-  for (let i = 0; i < testRuns; i++) {
-    let state = env.reset();
-    let done = false;
-    let steps = 0;
-    console.log(`\n--- DEMO RUN #${i+1} ---`);
-    while (!done) {
-      // We'll pick the best action from Q-table
-      const currentIndex = encodeStateForDemo(agent, state);
-      const action = bestActionFromQ(agent.getQTable()[currentIndex]);
+        // environment step
+        const { nextState, reward, done: isDone } = env.step(action);
 
-      // For demonstration, we skip real user queries. 
-      // If you had a user query, you'd call env.step(action, userQuery).
-      const stepResult = env.step(action);
-      console.log(`Step=${steps}, Action=${action}, Reward=${stepResult.reward}, NextState=${JSON.stringify(stepResult.nextState)}`);
+        // store in replay
+        agent.observe({
+          state,
+          action,
+          reward,
+          nextState,
+          done: isDone
+        });
 
-      state = stepResult.nextState;
-      done = stepResult.done;
-      steps++;
+        await agent.trainBatch(trainingBatchSize);
+
+        state = nextState;
+        done = isDone;
+      }
+
+      // check final correctness
+      if (state.correctness >= config.correctnessThreshold) {
+        success = true;
+        console.log(`  => Episode success in ${config.name}, correctness=${state.correctness.toFixed(2)}`);
+      } else {
+        console.log(`  => Episode repeat in ${config.name}, correctness=${state.correctness.toFixed(2)}`);
+      }
+    }
+
+    if (!success) {
+      console.log(`User couldn't progress after ${maxTries} tries in ${config.name}. Move on or stop? Stopping now.`);
+      break;
     }
   }
+
+  console.log("All done. Exiting.");
+  // Optionally save model
+  // e.g. agent.saveModel("file://./myModel")
 }
 
-// Utility for demonstration
-function bestActionFromQ(actionValues: number[]): number {
-  let best = 0;
-  let bestVal = actionValues[0];
-  for (let i = 1; i < actionValues.length; i++) {
-    if (actionValues[i] > bestVal) {
-      best = i;
-      bestVal = actionValues[i];
-    }
-  }
-  return best;
-}
-
-// This must replicate the same state encoding logic used in QLearningAgent
-function encodeStateForDemo(agent: QLearningAgent, s: any): number {
-  // In a real design, we might keep a consistent utility function to encode states
-  // For now, let's replicate the logic or store it in a shared place
-  const roleFactor = s.role;
-  const stageFactor = s.storylineStage;
-  const skillFactor = s.sqlSkill;
-  const timeFactor = Math.min(s.engagementTime, 200);
-  const diffFactor = s.puzzleDifficulty;
-
-  let index = roleFactor;
-  index += stageFactor * 2;
-  index += skillFactor * 2 * 6;
-  index += timeFactor * 2 * 6 * 6;
-  index += diffFactor * 2 * 6 * 6 * 201;
-  return index;
-}
-
-// Run main
-main().catch((err) => console.error(err));
+main().catch(err => console.error(err));
