@@ -12,5 +12,10 @@
   },
   "devDependencies": {
     "typescript": "^5.7.3"
+  },
+  "scripts": {
+    "start": "node server/SessionServer.js",
+    "dev": "nodemon server.js",
+    "build": "tsc"
   }
 }
