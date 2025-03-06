@@ -1,5 +1,7 @@
 import * as tf from "@tensorflow/tfjs-node";
+import { Pool } from "pg";
 import readline from "readline";
+import { easyQueries } from "./resources/easy_queries";  // <-- Make sure you have this import
 
 /**
  * -----------------------------------------------------
@@ -34,7 +36,7 @@ const DIFFICULTIES: DifficultyInfo[] = [
   {
     name: "Easy",
     maxSteps: 3,
-    passThreshold: 0.3,
+    passThreshold: 0.7,
     scenario: `
 EASY LEVEL: Identifying Rebels
 Neo identifies potential rebels in the residue table. We do basic SQL queries
@@ -85,6 +87,38 @@ interface EnvState {
   difficultyIndex: number; // 0=Easy,1=Med,2=Hard
   stepCount: number;
   correctness: number;     // 0..1
+}
+
+const pool = new Pool({
+  // Adapt to your own DB credentials
+  user: "matrix_sql_dqn",
+  host: "localhost",
+  database: "matrix_game",
+  password: "matrix_sql_dqn",
+  port: 5432
+});
+
+// Utility: prompt the user for SQL input
+function promptUserForQuery(question: string): Promise<string> {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+// Utility: compare actual rows with expected
+function compareRows(actual: any[], expected: any[]): boolean {
+  // console.log("Actual rows:", actual);
+  // console.log("Expected rows:", expected);
+  if (actual.length !== expected.length) return false;
+  // Simple check if JSON-serialized arrays match
+  return JSON.stringify(actual) === JSON.stringify(expected);
 }
 
 class MatrixSQLEnvironment {
@@ -152,6 +186,60 @@ class MatrixSQLEnvironment {
     if (this.currentState.stepCount >= info.maxSteps) {
       this.done = true;
     }
+
+    return {
+      nextState: { ...this.currentState },
+      reward,
+      done: this.done
+    };
+  }
+
+  public async stepWithUserInput(expectedRows: any[]): Promise<{
+    nextState: EnvState;
+    reward: number;
+    done: boolean;
+  }> {
+    if (this.done) {
+      return {
+        nextState: { ...this.currentState },
+        reward: 0,
+        done: true
+      };
+    }
+
+    // 1. Get user query
+    const userQuery = await promptUserForQuery("Enter your SQL query: ");
+    let rows: any[] = [];
+
+    // 2. Run query
+    try {
+      const res = await pool.query(userQuery);
+      rows = res.rows;
+    } catch (err) {
+      console.log("Query error:", err);
+    }
+
+    // 3. Compare rows with expected
+    const matched = compareRows(rows, expectedRows);
+
+    // 4. Update correctness (negative if incorrect)
+    const oldCorrectness = this.currentState.correctness;
+    // For example, +0.3 on success, -0.1 on failure
+    let correctnessDelta = matched ? 0.3 : -0.1;
+    let newCorrectness = oldCorrectness + correctnessDelta;
+
+    // Clamp the correctness in [0,1]
+    if (newCorrectness < 0) newCorrectness = 0;
+    if (newCorrectness > 1) newCorrectness = 1;
+    this.currentState.correctness = newCorrectness;
+
+    this.currentState.stepCount++;
+    if (this.currentState.stepCount >= DIFFICULTIES[this.currentState.difficultyIndex].maxSteps) {
+      this.done = true;
+    }
+
+    // Negative reward if correctnessDelta < 0
+    const reward = 3 * correctnessDelta;
 
     return {
       nextState: { ...this.currentState },
@@ -430,44 +518,80 @@ async function runGame() {
     while (!success && attemptCount < maxTries) {
       attemptCount++;
       console.log(`  Attempt #${attemptCount} for ${diffInfo.name}`);
-      // create environment for this difficulty
+
+      // Create environment for this difficulty
       const env = new MatrixSQLEnvironment(diffIndex);
       env.reset();
 
-      let done = false;
-      while (!done) {
-        // Build state array
-        const s = env.getState();
-        const stateArr = [s.difficultyIndex, s.stepCount, s.correctness];
+      if (diffInfo.name === "Easy") {
+        // CUSTOM LOGIC FOR EASY LEVEL:
+        //  0. Ignore the usual max steps
+        //  1. Read each query in order from easy_queries
+        //  2. If correctness >= passThreshold, move on to next difficulty
+        //  3. Else keep reading until no more queries remain
 
-        // pick action
-        const action = agent.chooseAction(stateArr);
+        // Gather all query names in an array
+        const queryNames = Object.keys(easyQueries) as Array<keyof typeof easyQueries>;
+        for (let i = 0; i < queryNames.length && !success; i++) {
+          const testCase = easyQueries[queryNames[i]];
+          console.log(testCase);
+          // stepWithUserInput: we pass in testCase.expected as the “correct” rows
+          const { nextState, reward } = await env.stepWithUserInput(testCase.expected);
 
-        // step
-        const { nextState, reward, done: isDone } = env.step(action);
-        const nextArr = [nextState.difficultyIndex, nextState.stepCount, nextState.correctness];
+          // Build state array
+          const s = nextState;
+          const stateArr = [s.difficultyIndex, s.stepCount, s.correctness];
 
-        // store transition
-        agent.observe({
-          state: stateArr,
-          action,
-          reward,
-          nextState: nextArr,
-          done: isDone
-        });
+          // RL agent logic
+          const action = agent.chooseAction(stateArr);
+          agent.observe({
+            state: stateArr,
+            action,
+            reward,
+            nextState: stateArr,
+            done: false // we let our logic manually decide when to succeed
+          });
+          await agent.trainBatch(batchSize);
 
-        // train
-        await agent.trainBatch(batchSize);
-
-        done = isDone;
-      }
-
-      const finalState = env.getState();
-      if (finalState.correctness >= diffInfo.passThreshold) {
-        success = true;
-        console.log(`  => Completed [${diffInfo.name}] with correctness = ${finalState.correctness.toFixed(2)}`);
+          // Check correctness
+          if (nextState.correctness >= diffInfo.passThreshold) {
+            success = true;
+            console.log(
+              `  => Completed [${diffInfo.name}] with correctness = ${nextState.correctness.toFixed(2)}`
+            );
+          } else {
+            console.log(
+              `  => Query [${queryNames[i]}], correctness = ${nextState.correctness.toFixed(2)} (continuing...)`
+            );
+          }
+        }
       } else {
-        console.log(`  => Retrying [${diffInfo.name}], correctness = ${finalState.correctness.toFixed(2)}`);
+        // ORIGINAL LOGIC FOR MEDIUM/HARD
+        // Use the existing code that checks maxSteps, etc.
+        let done = false;
+        while (!done) {
+          // Example expected rows for demonstration
+          const expectedRows = [{ id: 1, name: "Neo", status: "PotentialRebel" }];
+          const { nextState, reward, done: isDone } = await env.stepWithUserInput(expectedRows);
+
+          const s = nextState;
+          const stateArr = [s.difficultyIndex, s.stepCount, s.correctness];
+
+          const action = agent.chooseAction(stateArr);
+          agent.observe({ state: stateArr, action, reward, nextState: stateArr, done: isDone });
+          await agent.trainBatch(batchSize);
+
+          done = isDone;
+        }
+
+        // Check correctness after environment is done
+        const finalState = env.getState();
+        if (finalState.correctness >= diffInfo.passThreshold) {
+          success = true;
+          console.log(`  => Completed [${diffInfo.name}] with correctness = ${finalState.correctness.toFixed(2)}`);
+        } else {
+          console.log(`  => Retrying [${diffInfo.name}], correctness = ${finalState.correctness.toFixed(2)}`);
+        }
       }
     }
 

@@ -122,3 +122,38 @@ ORDER BY replication_rank;
 ```
 
 **Story Impact**: By analyzing the rank of each replication event, Neo and Trinity can predict where and when Smith will appear next—crucial knowledge for planning an ambush and maintaining the integrity of the Matrix.
+
+## Schema
+```SQL
+CREATE TABLE residue (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50),
+    status VARCHAR(50)
+);
+```
+
+```SQL
+CREATE TABLE archives (
+    entry_id SERIAL PRIMARY KEY,
+    mission_name VARCHAR(50),
+    mission_description TEXT
+);
+```
+
+```SQL
+CREATE TABLE mission_logs (
+    log_id SERIAL PRIMARY KEY,
+    mission_name VARCHAR(50),
+    reference TEXT
+);
+```
+
+```SQL
+CREATE TABLE multi_agent_events (
+    event_id SERIAL PRIMARY KEY,
+    agent_id INT,
+    timestamp TIMESTAMP,
+    location VARCHAR(50),
+    agent_replication BOOLEAN
+);
+```
