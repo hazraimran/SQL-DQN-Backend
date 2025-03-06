@@ -74,8 +74,14 @@ export class MatrixSQLEnvironment {
     }
 
     const matched = compareRows(rows, expectedRows);
-    const correctnessDelta = matched ? 0.3 : 0;
-    this.currentState.correctness = Math.min(1, this.currentState.correctness + correctnessDelta);
+    const oldCorrectness = this.currentState.correctness;
+    const correctnessDelta = matched ? 0.3 : -0.1;
+    let newCorrectness = oldCorrectness + correctnessDelta;
+
+    // Clamp the correctness in [0,1]
+    if (newCorrectness < 0) newCorrectness = 0;
+    if (newCorrectness > 1) newCorrectness = 1;
+    this.currentState.correctness = newCorrectness;
 
     this.currentState.stepCount++;
     if (this.currentState.stepCount >= DIFFICULTIES[this.currentState.difficultyIndex].maxSteps) {
