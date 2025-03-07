@@ -1,11 +1,10 @@
 import { Pool } from "pg";
-import { EnvState } from "./types";
+import { EnvState } from "../shared/types";
 import { DIFFICULTIES } from "./difficulties";
-import { promptUserForQuery, compareRows } from "./utilities";
+import { promptUserForQuery, compareRows } from "../shared/utilities";
 
 export class MatrixSQLEnvironment {
   private currentState: EnvState;
-  private done: boolean;
 
   constructor(
     private difficultyIndex: number,
@@ -16,31 +15,20 @@ export class MatrixSQLEnvironment {
       stepCount: 0,
       correctness: 0
     };
-    this.done = false;
   }
 
   public reset(): EnvState {
-    this.currentState.stepCount = 0;
-    this.currentState.correctness = 0;
-    this.done = false;
+    this.currentState = { difficultyIndex: this.difficultyIndex, stepCount: 0, correctness: 0 };
     return { ...this.currentState };
-  }
-
-  public isDone(): boolean {
-    return this.done;
   }
 
   public getState(): EnvState {
     return { ...this.currentState };
   }
 
-  // Example step() method
-  public step(action: number): { nextState: EnvState; reward: number; done: boolean } {
-    if (this.done) {
-      return { nextState: { ...this.currentState }, reward: 0, done: true };
-    }
+  // Agent will call this method to interact with the environment
+  public step(action: number): { nextState: EnvState; reward: number; } {
 
-    const info = DIFFICULTIES[this.currentState.difficultyIndex];
     const baseChance = (action === 0) ? 0.3 : 0.6;
     const success = (Math.random() < baseChance);
 
@@ -52,19 +40,21 @@ export class MatrixSQLEnvironment {
 
     this.currentState.stepCount++;
     this.currentState.correctness = newCorrectness;
-    if (this.currentState.stepCount >= info.maxSteps) {
-      this.done = true;
-    }
-    return { nextState: { ...this.currentState }, reward, done: this.done };
+
+    return { nextState: { ...this.currentState }, reward };
   }
 
-  // Example stepWithUserInput() method
-  public async stepWithUserInput(expectedRows: any[]): Promise<{ nextState: EnvState; reward: number; done: boolean }> {
-    if (this.done) {
-      return { nextState: { ...this.currentState }, reward: 0, done: true };
-    }
+  /**
+   * stepWithUserInput: the user enters an SQL query. We check correctness vs. 'expectedRows'.
+   * The reward is based on correctness, and the environment state is updated.
+   */ 
+  public async stepWithUserInput(expectedRows: any[]): Promise<{
+    nextState: EnvState;
+    reward: number;
+  }> {
+
     const userQuery = await promptUserForQuery("Enter your SQL query: ");
-    let rows: any[] = [];
+    let rows: string[] = [];
 
     try {
       const res = await this.pool.query(userQuery);
@@ -75,6 +65,7 @@ export class MatrixSQLEnvironment {
 
     const matched = compareRows(rows, expectedRows);
     const oldCorrectness = this.currentState.correctness;
+
     const correctnessDelta = matched ? 0.3 : -0.1;
     let newCorrectness = oldCorrectness + correctnessDelta;
 
@@ -83,12 +74,7 @@ export class MatrixSQLEnvironment {
     if (newCorrectness > 1) newCorrectness = 1;
     this.currentState.correctness = newCorrectness;
 
-    this.currentState.stepCount++;
-    if (this.currentState.stepCount >= DIFFICULTIES[this.currentState.difficultyIndex].maxSteps) {
-      this.done = true;
-    }
-
     const reward = 3 * correctnessDelta;
-    return { nextState: { ...this.currentState }, reward, done: this.done };
+    return { nextState: { ...this.currentState }, reward };
   }
 }

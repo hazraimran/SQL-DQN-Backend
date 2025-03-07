@@ -3,15 +3,13 @@ import * as tf from "@tensorflow/tfjs-node";
 /**
  * QNetwork defines the neural net for approximating the Q-values:
  * Q(state) => [Q-value for each possible action].
+ * We'll define a small feed-forward net. Input = 3 dims,
+ * output = 10 possible actions.
  */
 export class QNetwork {
   private model: tf.LayersModel;
-  private inputDim: number;   // dimension of input vector (state)
-  private outputDim: number;  // number of possible actions
 
-  constructor(inputDim: number, outputDim: number) {
-    this.inputDim = inputDim;
-    this.outputDim = outputDim;
+  constructor(private inputDim: number, private outputDim: number) {
     this.model = this.buildModel();
   }
 
@@ -21,7 +19,6 @@ export class QNetwork {
    */
   private buildModel(): tf.LayersModel {
     const model = tf.sequential();
-    // First hidden layer
     model.add(
       tf.layers.dense({
         units: 16,
@@ -29,14 +26,12 @@ export class QNetwork {
         activation: "relu"
       })
     );
-    // Second hidden layer
     model.add(
       tf.layers.dense({
         units: 16,
         activation: "relu"
       })
     );
-    // Output layer (outputDim = number of actions)
     model.add(
       tf.layers.dense({
         units: this.outputDim,
@@ -72,9 +67,6 @@ export class QNetwork {
     ys.dispose();
   }
 
-  /**
-   * getModel: Exposes the underlying TensorFlow model (useful for copying weights).
-   */
   public getModel(): tf.LayersModel {
     return this.model;
   }

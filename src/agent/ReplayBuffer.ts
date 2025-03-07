@@ -1,4 +1,4 @@
-import { Transition } from "./Transition";
+import { Transition } from "../shared/types";
 
 /**
  * ReplayBuffer stores and samples transitions for training the DQN.
@@ -32,16 +32,16 @@ export class ReplayBuffer {
    */
   public sample(batchSize: number): Transition[] {
     const result: Transition[] = [];
+    const size = this.buffer.length;
+    if (size === 0) return result;
+
     for (let i = 0; i < batchSize; i++) {
-      const idx = Math.floor(Math.random() * this.buffer.length);
+      const idx = Math.floor(Math.random() * size);
       result.push(this.buffer[idx]);
     }
     return result;
   }
 
-  /**
-   * size: Returns how many transitions are currently stored.
-   */
   public size(): number {
     return this.buffer.length;
   }

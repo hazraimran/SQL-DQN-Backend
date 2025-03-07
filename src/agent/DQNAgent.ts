@@ -1,6 +1,6 @@
 import { QNetwork } from "./QNetwork";
 import { ReplayBuffer } from "./ReplayBuffer";
-import { Transition } from "./Transition";
+import { Transition } from "../shared/types";
 
 /**
  * DQNAgent manages:
@@ -31,14 +31,10 @@ export class DQNAgent {
     epsilonDecay = 0.995,
     updateTargetSteps = 50
   ) {
-    // Create two identical networks: qNetwork and targetNetwork
     this.qNetwork = new QNetwork(inputDim, outputDim);
     this.targetNetwork = new QNetwork(inputDim, outputDim);
-
-    // Copy initial weights from qNetwork to targetNetwork
     this.copyWeightsToTarget();
 
-    // Initialize the replay buffer
     this.replayBuffer = new ReplayBuffer(replayCapacity);
 
     this.gamma = gamma;
@@ -55,8 +51,10 @@ export class DQNAgent {
    * Otherwise, pick the action with the highest Q-value predicted by qNetwork.
    */
   public chooseAction(stateArr: number[]): number {
+    // Assume 10 possible actions
+    const numActions = 10;
     if (Math.random() < this.epsilon) {
-      return Math.floor(Math.random() * 2);
+      return Math.floor(Math.random() * numActions);
     } else {
       const pred = this.qNetwork.predict([stateArr]);
       const data = pred.dataSync(); // Q-values in a typed array
@@ -96,7 +94,7 @@ export class DQNAgent {
    * trainBatch: Samples transitions from replay buffer and updates the qNetwork.
    */
   public async trainBatch(batchSize: number) {
-    if (this.replayBuffer.size() < batchSize) return;
+    if (this.replayBuffer.size() < 1) return;
 
     const transitions = this.replayBuffer.sample(batchSize);
     const states = transitions.map(t => t.state);
@@ -113,13 +111,11 @@ export class DQNAgent {
     // update the Q-value target for each transition
     const targetVals = qPredVals.map((row, idx) => {
       const t = transitions[idx];
-      const updatedRow = [...row]; 
-      if (t.done) {
-        updatedRow[t.action] = t.reward;
-      } else {
-        const maxNext = Math.max(...qNextVals[idx]);
-        updatedRow[t.action] = t.reward + this.gamma * maxNext;
-      }
+      const updatedRow = [...row];
+
+      const maxNext = Math.max(...qNextVals[idx]);
+      updatedRow[t.action] = t.reward + this.gamma * maxNext;
+      
       return updatedRow;
     });
 
@@ -138,5 +134,18 @@ export class DQNAgent {
   private copyWeightsToTarget() {
     const mainWeights = this.qNetwork.getModel().getWeights();
     this.targetNetwork.getModel().setWeights(mainWeights);
+  }
+
+  public async offlineTrain(transitions: Transition[], epochs = 10, batchSize = 32) {
+    // push all transitions to replay buffer
+    transitions.forEach(t => this.observe(t));
+
+    // run multiple epochs
+    for (let e = 0; e < epochs; e++) {
+      for (let i = 0; i < 100; i++) {
+        await this.trainBatch(batchSize);
+      }
+      console.log(`OfflineTrain: finished epoch #${e + 1}`);
+    }
   }
 }
