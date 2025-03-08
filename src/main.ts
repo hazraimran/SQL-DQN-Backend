@@ -2,11 +2,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { Pool } from "pg";
-import { DIFFICULTIES} from "./src/environment/difficulties";
-import { MatrixSQLEnvironment } from "./src/environment/MatrixSQLEnvironment";
-import { DQNAgent } from "./src/agent/DQNAgent";
-import { loadTransitionsFromCSV } from "./src/shared/utilities";
-import { easyQueries } from "./src/resources/easy_queries";
+import { DIFFICULTIES} from "./shared/difficulties";
+import { MatrixSQLEnvironment } from "./environment/MatrixSQLEnvironment";
+import { DQNAgent } from "./agent/DQNAgent";
+import { loadTransitionsFromCSV } from "./shared/utilities";
+import { easyQueries } from "./resources/easy_queries";
 
 
 async function runGame() {

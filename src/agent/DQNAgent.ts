@@ -52,7 +52,6 @@ export class DQNAgent {
    */
   public chooseAction(stateArr: number[]): number {
     // 10 possible actions/ types of queries
-    const numActions = 10;
     const tieThreshold = 1e-3;
 
     // Determine which actions are still available (mastery < 1)

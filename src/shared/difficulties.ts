@@ -1,4 +1,4 @@
-import { DifficultyInfo } from "../shared/types";
+import { DifficultyInfo } from "./types";
 
 export const DIFFICULTIES: DifficultyInfo[] = [
   {
