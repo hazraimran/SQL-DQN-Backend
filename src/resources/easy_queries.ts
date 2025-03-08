@@ -1,6 +1,6 @@
 export const easyQueries = {
-  "basic SELECT and FROM": {
-    branchId: 0.0,
+  0: {
+    branchName: "basic SELECT and FROM",
     storyNarrative: `
       Neo is on a mission to identify potential rebels in the Matrix.
       He needs to query the 'residue' table to find them.
@@ -8,13 +8,13 @@ export const easyQueries = {
     expected: [
       { name: "Neo", status: "PotentialRebel" },
       { name: "Trinity", status: "PotentialRebel" },
-      { name: 'Jane Doe', status: null },
-      { name: 'Jane Doe', status: null },
+      // { name: 'Jane Doe', status: null },
+      // { name: 'Jane Doe', status: null },
     ]
   },
 
-  "basic WHERE clause": {
-    branchId: 0.1,
+  1: {
+    branchName: "basic WHERE clause",
     storyNarrative: `
       Neo needs to narrow down his search to only those rebels
       who have a high probability of being The One.
@@ -22,52 +22,52 @@ export const easyQueries = {
     expected: [
         { name: "Neo", status: "PotentialRebel" },
         { name: "Trinity", status: "PotentialRebel" },
-        { name: 'Jane Doe', status: null },
-        { name: 'Jane Doe', status: null },
+        // { name: 'Jane Doe', status: null },
+        // { name: 'Jane Doe', status: null },
     ]
   },
 
-  "Pattern Matching with LIKE": {
+  2: {
     // Fixed the expected field to match the columns (name, status)
-    branchId: 0.2,
+    branchName: "Pattern Matching with LIKE",
     storyNarrative: `
       Neo needs to find rebels with names that contain the letter 'e'.
     `,
     expected: [
         { name: "Neo", status: "PotentialRebel" },
         { name: "Trinity", status: "PotentialRebel" },
-        { name: 'Jane Doe', status: null },
-        { name: 'Jane Doe', status: null },
+        // { name: 'Jane Doe', status: null },
+        // { name: 'Jane Doe', status: null },
     ]
   },
 
-  "Handling NULL values": {
-    branchId: 0.3,
+  3: {
+    branchName: "Handling NULL values",
     storyNarrative: `
       Neo needs to find rebels with unknown status.
     `,
     expected: [
         { name: "Neo", status: "PotentialRebel" },
         { name: "Trinity", status: "PotentialRebel" },
-        { name: 'Jane Doe', status: null },
-        { name: 'Jane Doe', status: null },
+        // { name: 'Jane Doe', status: null },
+        // { name: 'Jane Doe', status: null },
     ]
     },
 
-    "ORDER BY": {
-    branchId: 0.4,
+    4: {
+    branchName: "ORDER BY clause",
     storyNarrative: `
       Neo needs to sort the rebels by their names.
     `,
     expected: [
         { name: "Neo", status: "PotentialRebel" },
         { name: "Trinity", status: "PotentialRebel" },
-        { name: "Morpheus", status: "Captain" }
+        // { name: "Morpheus", status: "Captain" }
     ]
     },
 
-    "INSERT Statement": {
-    branchId: 0.5,
+    5: {
+    branchName: "INSERT Statement",
     storyNarrative: `
       Neo needs to add a new rebel to the 'residue' table.
     `,
@@ -76,8 +76,8 @@ export const easyQueries = {
     ]
     },
 
-    "UPDATE Statement": {
-    branchId: 0.6,
+    6: {
+    branchName: "UPDATE Statement",
     storyNarrative: `
       Neo needs to update the status of a rebel in the 'residue' table.
     `,
@@ -86,18 +86,18 @@ export const easyQueries = {
     ]
     },
 
-    "DELETE Statement": {
-    branchId: 0.7,
+    7: {
+    branchName: "DELETE Statement",
     storyNarrative: `
       Neo needs to remove a rebel from the 'residue' table.
     `,
     expected: [
-        "1 row deleted."
+        "DELETE 1"
     ]
     },
 
-    "Basic TRANSACTION Usage (ROLLBACK)": {
-    branchId: 0.8,
+    8: {
+    branchName: "Basic TRANSACTION Usage (ROLLBACK)",
     storyNarrative: `
       Neo needs to perform a transaction that should be rolled back.
     `,
@@ -107,8 +107,8 @@ export const easyQueries = {
     ]
     },
 
-    "Basic TRANSACTION Usage (COMMIT)": {
-    branchId: 0.9,
+    9: {
+    branchName: "Basic TRANSACTION Usage (COMMIT)",
     storyNarrative: `
       Neo needs to perform a transaction
       that should be committed.

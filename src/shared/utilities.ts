@@ -32,10 +32,10 @@ export async function loadTransitionsFromCSV(csvPath: string): Promise<Transitio
   const transitions: Transition[] = lines.map(line => {
     const parts = line.split(",").map(Number);
     return {
-      state: parts.slice(0, 3),
-      action: parts[3],
-      reward: parts[4],
-      nextState: parts.slice(5)
+      state: parts.slice(0, 10),
+      action: parts[10],
+      reward: parts[11],
+      nextState: parts.slice(12)
     };
   }
   );

@@ -1,7 +1,7 @@
 export interface EnvState {
-    difficultyIndex: number; // 0=Easy,1=Med,2=Hard
-    correctness: number;     // 0..1
-    stepCount: number;      // used to sync online/offline networks
+    mastery: number[];       // mastery of each concept (10 concepts)
+    stepCount: number;       // used to sync online/offline networks
+    done: boolean;           // whether the environment is done
 }
 
 export interface DifficultyInfo {

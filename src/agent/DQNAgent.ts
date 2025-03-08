@@ -24,10 +24,10 @@ export class DQNAgent {
   constructor(
     inputDim: number,
     outputDim: number,
-    replayCapacity: number,
+    replayCapacity: number = 5000,
     gamma = 0.99,
     epsilon = 1.0,
-    epsilonMin = 0.01,
+    epsilonMin = 0.1,
     epsilonDecay = 0.995,
     updateTargetSteps = 50
   ) {
@@ -51,13 +51,17 @@ export class DQNAgent {
    * Otherwise, pick the action with the highest Q-value predicted by qNetwork.
    */
   public chooseAction(stateArr: number[]): number {
-    // Assume 10 possible actions
+    // 10 possible actions/ types of queries
     const numActions = 10;
+    const tieThreshold = 1e-3;
+
     if (Math.random() < this.epsilon) {
       return Math.floor(Math.random() * numActions);
     } else {
       const pred = this.qNetwork.predict([stateArr]);
       const data = pred.dataSync(); // Q-values in a typed array
+      pred.dispose();
+
       let bestA = 0;
       let bestVal = data[0];
       for (let i = 1; i < data.length; i++) {
@@ -66,7 +70,19 @@ export class DQNAgent {
           bestA = i;
         }
       }
-      pred.dispose();
+
+      // collect all actions with Q-value close to bestVal
+      const bestActions: number[] = [];
+      for (let i = 0; i < data.length; i++) {
+        if (Math.abs(data[i] - bestVal) < tieThreshold) {
+          bestActions.push(i);
+        }
+      }
+
+      // randomly pick one of the best actions
+      if (bestActions.length > 1) {
+        bestA = bestActions[Math.floor(Math.random() * bestActions.length)];
+      }
       return bestA;
     }
   }
@@ -94,7 +110,7 @@ export class DQNAgent {
    * trainBatch: Samples transitions from replay buffer and updates the qNetwork.
    */
   public async trainBatch(batchSize: number) {
-    if (this.replayBuffer.size() < 1) return;
+    if (this.replayBuffer.size() < batchSize) return;
 
     const transitions = this.replayBuffer.sample(batchSize);
     const states = transitions.map(t => t.state);

@@ -19,7 +19,7 @@ async function runGame() {
     database: process.env.DB_DATABASE
   });
 
-  const inputDim = 3;   // [difficultyIndex, stepCount, correctness]
+  const inputDim = 10;   // [mastery*10]
   const outputDim = 10;  // 10 possible actions
   const agent = new DQNAgent(inputDim, outputDim, 5000);
   const batchSize = 16;
@@ -38,48 +38,49 @@ async function runGame() {
     console.log(diffInfo.scenario);
 
     let success = false;
-    const env = new MatrixSQLEnvironment(diffIndex, pool);
+    const env = new MatrixSQLEnvironment(10, pool);
     env.reset();
 
     while (!success) {
-      const queryNames = Object.keys(easyQueries) as Array<keyof typeof easyQueries>;
-      for (const queryName of queryNames) {
+      // const queryIds = Object.keys(easyQueries).map(key => parseInt(key)) as (keyof typeof easyQueries)[];
+      // for (const queryName of queryNames) {
         // 1) Grab the old state BEFORE stepping
         const oldEnvState = env.getState();
-        const oldStateArr = [
-          oldEnvState.difficultyIndex,
-          oldEnvState.stepCount,
-          oldEnvState.correctness
-        ];
+        const oldStateArr = oldEnvState.mastery;
+        // [
+        //   oldEnvState.mastery,
+        //   oldEnvState.stepCount,
+        //   oldEnvState.correctness
+        // ];
         
         // 2) Agent chooses an action
         const action = agent.chooseAction(oldStateArr);
         console.log(`\nChose action: ${action}`);
 
         // 3) Agent steps in the environment
-        const query = easyQueries[queryName];
-        console.log(`\nQuery: [${queryName}]: ${query.storyNarrative}`);
+        const query = easyQueries[action as keyof typeof easyQueries];
+        console.log(`\nQuery: [${action} - ${query.branchName}]: ${query.storyNarrative}`);
 
-        const { nextState, reward } = await env.stepWithUserInput(query.expected);
-        const newStateArr = [nextState.difficultyIndex, nextState.stepCount, nextState.correctness];
+        const { nextState, reward } = await env.stepWithUserInput(action, query.expected);
+        // const newStateArr = [nextState.difficultyIndex, nextState.stepCount, nextState.correctness];
 
         // 4) Observe the transition
-        agent.observe({ state: oldStateArr, action, reward, nextState: newStateArr });
+        agent.observe({ state: oldStateArr, action, reward, nextState: nextState.mastery });
 
         await agent.trainBatch(batchSize);
 
-        const correctness = nextState.correctness;
-        console.log(`Current correctness: ${correctness.toFixed(2)}`);
+        const masteryAction = nextState.mastery[action];
+        console.log(`Current mastery of Query ${action}: ${masteryAction.toFixed(2)}`);
   
-        // Move on once correctness is enough
-        if (correctness >= diffInfo.passThreshold) {
-          success = true;
-          console.log(`  => Completed [${diffInfo.name}] with correctness = ${correctness.toFixed(2)}`);
-          break;
-        } else {
-          console.log(`  => Query [${query}], correctness = ${correctness.toFixed(2)} (continuing...)`);
-        }
-      }
+        // // Move on once correctness is enough
+        // if (correctness >= diffInfo.passThreshold) {
+        //   success = true;
+        //   console.log(`  => Completed [${diffInfo.name}] with correctness = ${correctness.toFixed(2)}`);
+        //   break;
+        // // } else {
+        // //   console.log(`  => Query [${query.branchId} - ${queryName}], correctness = ${correctness.toFixed(2)} (continuing...)`);
+        // }
+      // }
     }
   }
 
