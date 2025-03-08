@@ -75,9 +75,17 @@ export class MatrixSQLEnvironment {
     let reward = 0;
     if (0.4 < oldMastery && oldMastery < 0.6) {
       reward += 1;
+    } else if (oldMastery >=0.8) {
+      reward -= 0.8;
     }
+
     if (matched) {
       reward += masteryDelta * 2;
+    }
+
+    // if all mastery >= 0.7, we can consider environment done
+    if (this.currentState.mastery.every(m => m >= 0.7)) {
+      this.currentState.done = true;
     }
 
     return { nextState: { ...this.currentState }, reward };

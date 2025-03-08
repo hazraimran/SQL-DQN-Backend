@@ -72,7 +72,7 @@ export const easyQueries = {
       Neo needs to add a new rebel to the 'residue' table.
     `,
     expected: [
-        "1 row inserted."
+        "INSERT 0 1"
     ]
     },
 
@@ -82,7 +82,7 @@ export const easyQueries = {
       Neo needs to update the status of a rebel in the 'residue' table.
     `,
     expected: [
-        "1 row updated."
+        "UPDATE 1"
     ]
     },
 

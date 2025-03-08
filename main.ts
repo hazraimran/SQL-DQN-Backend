@@ -72,14 +72,14 @@ async function runGame() {
         const masteryAction = nextState.mastery[action];
         console.log(`Current mastery of Query ${action}: ${masteryAction.toFixed(2)}`);
   
-        // // Move on once correctness is enough
-        // if (correctness >= diffInfo.passThreshold) {
-        //   success = true;
-        //   console.log(`  => Completed [${diffInfo.name}] with correctness = ${correctness.toFixed(2)}`);
-        //   break;
-        // // } else {
-        // //   console.log(`  => Query [${query.branchId} - ${queryName}], correctness = ${correctness.toFixed(2)} (continuing...)`);
-        // }
+        // Move on once mastery is over 90%
+        if (nextState.done) {
+          success = true;
+          console.log(`  => Completed [${diffInfo.name}] with mastery = ${(nextState.mastery.reduce((a, b) => a+b) / nextState.mastery.length).toFixed(2)}`);
+          break;
+        // } else {
+        //   console.log(`  => Query [${query.branchId} - ${queryName}], correctness = ${correctness.toFixed(2)} (continuing...)`);
+        }
       // }
     }
   }
