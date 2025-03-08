@@ -73,10 +73,10 @@ export class MatrixSQLEnvironment {
     this.currentState.mastery[action] = Math.max(0.0, Math.min(1, oldMastery + masteryDelta));
 
     let reward = 0;
-    if (0.4 < oldMastery && oldMastery < 0.6) {
+    if (0.4 <= oldMastery && oldMastery <= 0.6) {
       reward += 1;
-    } else if (oldMastery >=0.8) {
-      reward -= 0.8;
+    } else if (oldMastery >=0.75) {
+      reward -= 2;
     }
 
     if (matched) {

@@ -21,9 +21,9 @@ for i in range(1, 1000):
     if 0.4 < state[action] < 0.6:
         reward += 1
     elif 0.8 <= state[action]:
-        reward -= 0.8
+        reward -= 2
 
-    if action in [0, 3]:
+    if random.random() < 0.1 or action in [2, 3] and random.random() < 0.9:
         reward -= 0.1
         new_state[action] = round(max(0, min(1, state[action] - 0.05)), 1)
     else:

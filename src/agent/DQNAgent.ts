@@ -55,31 +55,45 @@ export class DQNAgent {
     const numActions = 10;
     const tieThreshold = 1e-3;
 
+    // Determine which actions are still available (mastery < 1)
+    const availableActions = stateArr
+      .map((val, idx) => ({ mastery: val, action: idx }))
+      .filter(item => item.mastery < 1)
+      .map(item => item.action);
+
+    // If all masteries are 1, pick something arbitrarily
+    if (availableActions.length === 0) {
+      return 0;
+    }
+
+    // Epsilon-greedy logic, but only over available actions
     if (Math.random() < this.epsilon) {
-      return Math.floor(Math.random() * numActions);
+      // random choice among available actions
+      const randomIndex = Math.floor(Math.random() * availableActions.length);
+      return availableActions[randomIndex];
     } else {
+      // pick the action among available ones with the highest Q-value
       const pred = this.qNetwork.predict([stateArr]);
       const data = pred.dataSync(); // Q-values in a typed array
       pred.dispose();
 
-      let bestA = 0;
-      let bestVal = data[0];
-      for (let i = 1; i < data.length; i++) {
-        if (data[i] > bestVal) {
-          bestVal = data[i];
-          bestA = i;
+      // Find the best action among availableActions
+      let bestA = availableActions[0];
+      let bestVal = data[bestA];
+      for (const act of availableActions) {
+        if (data[act] > bestVal) {
+          bestVal = data[act];
+          bestA = act;
         }
       }
 
-      // collect all actions with Q-value close to bestVal
+      // Collect all actions with Q-values close to bestVal and pick randomly
       const bestActions: number[] = [];
-      for (let i = 0; i < data.length; i++) {
-        if (Math.abs(data[i] - bestVal) < tieThreshold) {
-          bestActions.push(i);
+      for (const act of availableActions) {
+        if (Math.abs(data[act] - bestVal) < tieThreshold) {
+          bestActions.push(act);
         }
       }
-
-      // randomly pick one of the best actions
       if (bestActions.length > 1) {
         bestA = bestActions[Math.floor(Math.random() * bestActions.length)];
       }
