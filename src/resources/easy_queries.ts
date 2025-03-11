@@ -8,8 +8,8 @@ export const easyQueries = {
     expected: [
       { name: "Neo", status: "PotentialRebel" },
       { name: "Trinity", status: "PotentialRebel" },
-      // { name: 'Jane Doe', status: null },
-      // { name: 'Jane Doe', status: null },
+      { name: 'Jane Doe', status: null },
+      { name: 'Morpheus', status: 'Captain' },
     ]
   },
 
@@ -22,8 +22,6 @@ export const easyQueries = {
     expected: [
         { name: "Neo", status: "PotentialRebel" },
         { name: "Trinity", status: "PotentialRebel" },
-        // { name: 'Jane Doe', status: null },
-        // { name: 'Jane Doe', status: null },
     ]
   },
 
@@ -31,26 +29,21 @@ export const easyQueries = {
     // Fixed the expected field to match the columns (name, status)
     branchName: "Pattern Matching with LIKE",
     storyNarrative: `
-      Neo needs to find rebels with names that contain the letter 'e'.
+      Neo needs to find rebels with names that start from the letter 'T'.
     `,
     expected: [
-        { name: "Neo", status: "PotentialRebel" },
         { name: "Trinity", status: "PotentialRebel" },
-        // { name: 'Jane Doe', status: null },
-        // { name: 'Jane Doe', status: null },
     ]
   },
 
   3: {
     branchName: "Handling NULL values",
     storyNarrative: `
-      Neo needs to find rebels with unknown status.
+      Neo needs to find humans with unknown - 'null' status and set them to 'PotentialRebel'.
     `,
     expected: [
-        { name: "Neo", status: "PotentialRebel" },
-        { name: "Trinity", status: "PotentialRebel" },
-        // { name: 'Jane Doe', status: null },
-        // { name: 'Jane Doe', status: null },
+        { name: 'Jane Doe', status: null },
+        "UPDATE 1",
     ]
     },
 
@@ -60,9 +53,10 @@ export const easyQueries = {
       Neo needs to sort the rebels by their names.
     `,
     expected: [
+        { name: 'Jane Doe', status: 'PotentialRebel' },
+        { name: "Morpheus", status: "Captain" },
         { name: "Neo", status: "PotentialRebel" },
         { name: "Trinity", status: "PotentialRebel" },
-        // { name: "Morpheus", status: "Captain" }
     ]
     },
 
@@ -79,7 +73,7 @@ export const easyQueries = {
     6: {
     branchName: "UPDATE Statement",
     storyNarrative: `
-      Neo needs to update the status of a rebel in the 'residue' table.
+      Neo needs to update the status of Trinity to 'Partner'.
     `,
     expected: [
         "UPDATE 1"
@@ -89,7 +83,7 @@ export const easyQueries = {
     7: {
     branchName: "DELETE Statement",
     storyNarrative: `
-      Neo needs to remove a rebel from the 'residue' table.
+      Neo needs to remove Jane Doe from the 'residue' table.
     `,
     expected: [
         "DELETE 1"

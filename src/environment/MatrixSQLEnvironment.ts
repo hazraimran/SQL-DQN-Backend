@@ -11,38 +11,18 @@ export class MatrixSQLEnvironment {
   ) {
     this.currentState = {
       mastery: new Array(numQueries).fill(0.6),
-      stepCount: 0,
       done: false
     };
   }
 
   public reset(): void {
     this.currentState.done = false;
-    this.currentState.stepCount = 0;
     this.currentState.mastery = this.currentState.mastery.map(() => 0.6);
   }
 
   public getState(): EnvState {
     return this.currentState;
   }
-
-  // // Agent will call this method to interact with the environment
-  // public step(action: number): { nextState: EnvState; reward: number; } {
-
-  //   const baseChance = (action === 0) ? 0.3 : 0.6;
-  //   const success = (Math.random() < baseChance);
-
-  //   let correctnessDelta = success ? 0.2 + Math.random() * 0.1 : 0;
-  //   const oldCorrectness = this.currentState.correctness;
-  //   let newCorrectness = oldCorrectness + correctnessDelta;
-  //   if (newCorrectness > 1) newCorrectness = 1;
-  //   const reward = 3 * (newCorrectness - oldCorrectness);
-
-  //   this.currentState.stepCount++;
-  //   this.currentState.correctness = newCorrectness;
-
-  //   return { nextState: { ...this.currentState }, reward };
-  // }
 
   /**
    * stepWithUserInput: the user enters an SQL query. We check the result with 'expectedRows'.
@@ -52,8 +32,6 @@ export class MatrixSQLEnvironment {
     nextState: EnvState;
     reward: number;
   }> {
-    this.currentState.stepCount++;
-
     const userQuery = await promptUserForQuery("Enter your SQL query: ");
     let rows: string[] = [];
 
@@ -83,11 +61,11 @@ export class MatrixSQLEnvironment {
       reward += masteryDelta * 2;
     }
 
-    // if all mastery >= 0.7, we can consider environment done
-    if (this.currentState.mastery.every(m => m >= 0.7)) {
+    // if all mastery >= 0.8, we can consider environment done
+    if (this.currentState.mastery.every(m => m >= 0.8)) {
       this.currentState.done = true;
     }
 
-    return { nextState: { ...this.currentState }, reward };
+    return { nextState: {...this.currentState}, reward };
   }
 }

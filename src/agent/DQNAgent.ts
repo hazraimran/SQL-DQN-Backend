@@ -126,8 +126,8 @@ export class DQNAgent {
     if (this.replayBuffer.size() < batchSize) return;
 
     const transitions = this.replayBuffer.sample(batchSize);
-    const states = transitions.map(t => t.state);
-    const nextStates = transitions.map(t => t.nextState);
+    const states = transitions.map(t => t.state.mastery);
+    const nextStates = transitions.map(t => t.nextState.mastery);
 
     // Q-values predicted by the online network for current states
     const qPred = this.qNetwork.predict(states);
