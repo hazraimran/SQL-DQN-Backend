@@ -6,7 +6,7 @@ const { Pool } = pg;
 import { DIFFICULTIES} from "./shared/difficulties";
 import { MatrixSQLEnvironment } from "./environment/MatrixSQLEnvironment";
 import { DQNAgent } from "./agent/DQNAgent";
-import { loadTransitionsFromCSV } from "./shared/utilities";
+import { promptUserForQuery, loadTransitionsFromCSV } from "./shared/utilities";
 import { easyQueries } from "./resources/easy_queries";
 import { argv } from "process";
 
@@ -61,7 +61,8 @@ async function runGame() {
       const query = easyQueries[action as keyof typeof easyQueries];
       console.log(`\nQuery: [${action} - ${query.branchName}]: ${query.storyNarrative}`);
 
-      const { nextState, reward } = await env.stepWithUserInput(action, query.expected);
+      const userQuery = await promptUserForQuery("Enter your SQL query: ");
+      const { nextState, reward } = await env.stepWithUserInput(action, query.expected, userQuery);
 
       // 4) Observe the transition
       agent.observe({ state: oldState, action, reward, nextState });

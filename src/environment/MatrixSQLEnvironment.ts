@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { EnvState } from "../shared/types";
-import { promptUserForQuery, compareRows } from "../shared/utilities";
+import { compareRows } from "../shared/utilities";
 
 export class MatrixSQLEnvironment {
   private currentState: EnvState;
@@ -28,11 +28,11 @@ export class MatrixSQLEnvironment {
    * stepWithUserInput: the user enters an SQL query. We check the result with 'expectedRows'.
    * The reward is based on mastery, and the environment state is updated.
    */ 
-  public async stepWithUserInput(action: number, expectedRows: any[]): Promise<{
+  public async stepWithUserInput(action: number, expectedRows: any[], userQuery: string): Promise<{
     nextState: EnvState;
     reward: number;
   }> {
-    const userQuery = await promptUserForQuery("Enter your SQL query: ");
+    // const userQuery = await promptUserForQuery("Enter your SQL query: ");
     let rows: string[] = [];
 
     try {

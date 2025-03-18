@@ -42,10 +42,9 @@ matrix-sql-dqn/
 ## To-Do
 - [ ] Integrate LLM model for generating storylines based on specific queries and theme.
 - [ ] Add queries for the medium and hard levels.
-- [x] Modify the current storyline to let each query have a correct answer.
 - [ ] Check why the DQN agent will choose the same action once when the mastery is equal to 1.
-- [x] Delete unnecessary attributes in the `MatrixSQLEnvironment`.
-- [x] Split into two functions to handle online and offline interactions.
+- [ ] Final version: get `theme`, `concepts` and `schema` from user, then generate a similar layout of existing games to let students play.
+- [ ] Write tests, fix bugs and check for edge cases.
 
 ## SQL Concepts by Difficulty
 
