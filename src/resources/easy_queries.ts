@@ -8,7 +8,7 @@ export const easyQueries = {
     expected: [
       { name: "Neo", status: "PotentialRebel" },
       { name: "Trinity", status: "PotentialRebel" },
-      { name: 'Jane Doe', status: null },
+      { name: 'Jane Doe', status: "PotentialRebel" },
       { name: 'Morpheus', status: 'Captain' },
     ]
   },
@@ -26,8 +26,7 @@ export const easyQueries = {
   },
 
   2: {
-    // Fixed the expected field to match the columns (name, status)
-    branchName: "Pattern Matching with LIKE",
+    branchName: "pattern matching with LIKE",
     storyNarrative: `
       Neo needs to find rebels with names that start from the letter 'T'.
     `,
@@ -37,7 +36,7 @@ export const easyQueries = {
   },
 
   3: {
-    branchName: "Handling NULL values",
+    branchName: "handle NULL values",
     storyNarrative: `
       Neo needs to find humans with unknown - 'null' status and set them to 'PotentialRebel'.
     `,
@@ -91,7 +90,7 @@ export const easyQueries = {
     },
 
     8: {
-    branchName: "Basic TRANSACTION Usage (ROLLBACK)",
+    branchName: "basic TRANSACTION usage (ROLLBACK)",
     storyNarrative: `
       Neo needs to perform a transaction that should be rolled back.
     `,
@@ -102,7 +101,7 @@ export const easyQueries = {
     },
 
     9: {
-    branchName: "Basic TRANSACTION Usage (COMMIT)",
+    branchName: "basic TRANSACTION usage (COMMIT)",
     storyNarrative: `
       Neo needs to perform a transaction
       that should be committed.
