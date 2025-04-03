@@ -8,7 +8,6 @@ import pg from "pg";
 const { Pool } = pg;
 import { Transition } from "../shared/types";
 import { loadTransitionsFromCSV } from "../shared/utilities";
-import { getGeneratedQuery } from "../shared/llmService";
 import { easyQueries } from '../resources/easy_queries';
 import dotenv from "dotenv";
 dotenv.config();
@@ -71,13 +70,12 @@ export async function startServer(port: number) {
     next();
   });
 
-  // Endpoint: set the game theme, schema and concepts
+  // Endpoint: set the game concepts
   app.post("/setup-form", async (req: Request, res: Response) => {
     try {
-      const { theme, schema, concepts } = req.body;
-      console.log("Received settings:", { theme, schema, concepts });
+      const { conceptsLength } = req.body;
+      console.log("Received:", { conceptsLength });
       // await getGeneratedQuery();
-      // numQueryTypes = concepts.length;
       const action = await initAgentEnv(numQueryTypes, pool);
       res.set("Access-Control-Allow-Origin", "*");
       res.json({ action });
@@ -117,7 +115,7 @@ export async function startServer(port: number) {
       return res.status(400).json({ error: "Agent or Environment not initialized." });
     }
 
-    const { userQuery } = req.body;
+    const { userQuery, expected } = req.body;
     console.log("Received user query:", userQuery);
      
     // Actually step the environment
@@ -125,8 +123,8 @@ export async function startServer(port: number) {
 
     // 2) Agent chooses an action
     const action = agent.chooseAction(oldState.mastery);
-    const expectedOutput: any = easyQueries[action as keyof typeof easyQueries].expected;
-    const { nextState, reward } = await env.stepWithUserInput(action, expectedOutput, userQuery);
+    console.log("Agent chose action:", action);
+    const { nextState, reward } = await env.stepWithUserInput(action, expected, userQuery);
 
     // Observe transition
     const transition: Transition = {
@@ -140,7 +138,7 @@ export async function startServer(port: number) {
     // Train
     await agent.trainBatch(16);
 
-    // respond with updated mastery, reward, etc.
+    // respond with updated mastery, action, and a successful message.
     res.json({
       newMastery: nextState.mastery,
       action,
