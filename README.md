@@ -65,36 +65,62 @@ matrix-sql-dqn/
 - Transaction management and locking
 
 ## Schema
-```SQL
-CREATE TABLE residue (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50),
-    status VARCHAR(50)
-);
-```
+### Cyberpunk
+- `residue`
+    | column_name | data_type    |
+    | ----------- | ------------ |
+    | name        | VARCHAR (50) |
+    | status      | VARCHAR (50) |
 
-```SQL
-CREATE TABLE archives (
-    entry_id SERIAL PRIMARY KEY,
-    mission_name VARCHAR(50),
-    mission_description TEXT
-);
-```
+    | name     | status              |
+    | -------- | ------------------- |
+    | Neo      | PotentialRebel      |
+    | Trinity  | PotentialRebel      |
+    | Morpheus | Captain             |
+    | Jane Doe | null                |
+    | Smith    | EliminationProtocol |
+    
+- `archives`
+    | column_name         | data_type    |
+    | ------------------- | ------------ |
+    | mission_id          | INT          |
+    | mission_name        | VARCHAR (50) |
+    | mission_description | TEXT         |
 
-```SQL
-CREATE TABLE mission_logs (
-    log_id SERIAL PRIMARY KEY,
-    mission_name VARCHAR(50),
-    reference TEXT
-);
-```
+    | mission_id | mission_name         | mission_description                              |
+    | ---------- | -------------------- | ------------------------------------------------ |
+    | 1          | Free The Mind        | An attempt to awaken humanity.                   |
+    | 2          | Locate The Key-maker | Securing the Keymaker for the Source.            |
+    | 3          | Defend Zion          | Protect the last human city from Sentinels.      |
+    | 4          | Rescue Operator      | An operator has gone missing in the field.       |
+    | 5          | Eliminate Virus      | Suspected virus detected within the Matrix code. |
 
-```SQL
-CREATE TABLE multi_agent_events (
-    event_id SERIAL PRIMARY KEY,
-    agent_id INT,
-    timestamp TIMESTAMP,
-    location VARCHAR(50),
-    agent_replication BOOLEAN
-);
-```
+- `mission_logs`
+    | column_name  | data_type   |
+    | ------------ | ----------- |
+    | mission_name | VARCHAR(50) |
+    | agent_id     | INT         |
+    | reference    | TEXT        |
+
+    | mission_name    | agent_id | reference                                     |
+    | --------------- | -------- | --------------------------------------------- |
+    | Free The Mind   | 101      | Operation started, Morpheus leads             |
+    | Free The Mind   | 101      | Strange glitch observed in downtown           |
+    | Defend Zion     | 103      | Sentinel swarm approaching main gate          |
+    | Eliminate Virus | 102      | Agent Smith anomaly flagged for investigation |
+    
+- `multi_agent_events`
+    | column_name       | data_type   |
+    | ----------------- | ----------- |
+    | agent_id          | INT         |
+    | timestamp         | TIMESTAMP   |
+    | location          | VARCHAR(50) |
+    | agent_replication | BOOLEAN     |
+    
+    | agent_id | timestamp           | location      | agent_replication |
+    | -------- | -------- | ------------------- | --------------- |
+    | 101      | 2023-01-01 09:15:00 | Downtown      | FALSE             |
+    | 101      | 2023-01-01 09:30:00 | Downtown      | FALSE             |
+    | 102      | 2023-01-01 10:00:00 | Rooftop       | TRUE              |
+    | 102      | 2023-01-01 10:15:00 | SubwayStation | TRUE              |
+    | 103      | 2023-01-01 10:30:00 | NULL          | FALSE             |

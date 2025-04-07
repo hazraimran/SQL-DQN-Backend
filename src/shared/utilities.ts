@@ -18,8 +18,34 @@ export function promptUserForQuery(question: string): Promise<string> {
 }
 
 export function compareRows(actual: any[], expected: any[]): boolean {
-  if (actual.length !== expected.length) return false;
-  return JSON.stringify(expected).includes(JSON.stringify(actual));
+  console.log("actual: ", actual);
+  console.log("expected: ", expected);
+  
+  // Check if expected is a nested array (array of result sets)
+  if (expected.length > 0 && Array.isArray(expected[0])) {
+    // Look for any matching array in the expected results
+    return expected.some(expectedSet => {
+      // Check if this expected set matches our actual results
+      return compareArraysDeep(actual, expectedSet);
+    });
+  }
+  
+  // If expected is a simple array, compare directly
+  return compareArraysDeep(actual, expected);
+}
+
+// Helper to deeply compare two arrays of objects
+function compareArraysDeep(arr1: any[], arr2: any[]): boolean {
+  if (arr1.length !== arr2.length) return false;
+  
+  // Sort both arrays to ensure consistent comparison
+  const sorted1 = [...arr1].sort((a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1);
+  const sorted2 = [...arr2].sort((a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1);
+  
+  // Check if each element matches
+  return sorted1.every((item, index) => {
+    return JSON.stringify(item) === JSON.stringify(sorted2[index]);
+  });
 }
 
 // CSV format: mastery[0], mastery[1], mastery[2], ...(*10), action, reward,

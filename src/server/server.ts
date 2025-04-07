@@ -8,7 +8,6 @@ import pg from "pg";
 const { Pool } = pg;
 import { Transition } from "../shared/types";
 import { loadTransitionsFromCSV } from "../shared/utilities";
-import { easyQueries } from '../resources/easy_queries';
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -114,36 +113,51 @@ export async function startServer(port: number) {
     if (!agent || !env) {
       return res.status(400).json({ error: "Agent or Environment not initialized." });
     }
-
+  
     const { userQuery, expected } = req.body;
     console.log("Received user query:", userQuery);
-     
-    // Actually step the environment
-    const oldState = env.getState();
-
-    // 2) Agent chooses an action
-    const action = agent.chooseAction(oldState.mastery);
-    console.log("Agent chose action:", action);
-    const { nextState, reward } = await env.stepWithUserInput(action, expected, userQuery);
-
-    // Observe transition
-    const transition: Transition = {
-      state: oldState,
-      action,
-      reward,
-      nextState
-    };
-    agent.observe(transition);
-
-    // Train
-    await agent.trainBatch(16);
-
-    // respond with updated mastery, action, and a successful message.
-    res.json({
-      newMastery: nextState.mastery,
-      action,
-      message: "Query processed"
-    });
+  
+    try {
+      // Execute the query with error handling
+      const resultFromDB = await pool.query(userQuery);
+      
+      // Actually step the environment
+      const oldState = env.getState();
+  
+      // 2) Agent chooses an action
+      const action = agent.chooseAction(oldState.mastery);
+      console.log("Agent chose action:", action);
+      const { nextState, reward, correct } = await env.stepWithUserInput(action, expected, resultFromDB.rows);
+  
+      // Observe transition
+      const transition: Transition = {
+        state: oldState,
+        action,
+        reward,
+        nextState
+      };
+      agent.observe(transition);
+  
+      // Train
+      await agent.trainBatch(16);
+  
+      // respond with updated mastery, action, and the actual result from DB.
+      res.json({
+        newMastery: nextState.mastery,
+        action,
+        resultFromDB: resultFromDB.rows,
+        correct,
+      });
+    } catch (error) {
+      console.error("Database query error:", error);
+      
+      // Send an appropriate error response to the client
+      return res.status(400).json({ 
+        error: true,
+        message: error instanceof Error ? error.message : "Unknown database error",
+        type: "database_error"
+      });
+    }
   });
 
   // Endpoint: ask agent to pick the best action given current mastery

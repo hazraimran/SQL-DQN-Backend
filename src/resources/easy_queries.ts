@@ -1,5 +1,5 @@
 export const easyQueries = {
-  0: {
+  1: {
     branchName: "basic SELECT and FROM",
     storyNarrative: `
       Neo is on a mission to identify potential rebels in the Matrix.
@@ -13,7 +13,7 @@ export const easyQueries = {
     ]
   },
 
-  1: {
+  2: {
     branchName: "basic WHERE clause",
     storyNarrative: `
       Neo needs to narrow down his search to only those rebels
@@ -25,7 +25,7 @@ export const easyQueries = {
     ]
   },
 
-  2: {
+  3: {
     branchName: "pattern matching with LIKE",
     storyNarrative: `
       Neo needs to find rebels with names that start from the letter 'T'.
@@ -35,80 +35,79 @@ export const easyQueries = {
     ]
   },
 
-  3: {
+  4: {
     branchName: "handle NULL values",
     storyNarrative: `
       Neo needs to find humans with unknown - 'null' status and set them to 'PotentialRebel'.
     `,
     expected: [
         { name: 'Jane Doe', status: null },
-        "UPDATE 1",
     ]
     },
 
-    4: {
-    branchName: "ORDER BY clause",
-    storyNarrative: `
-      Neo needs to sort the rebels by their names.
-    `,
-    expected: [
-        { name: 'Jane Doe', status: 'PotentialRebel' },
-        { name: "Morpheus", status: "Captain" },
-        { name: "Neo", status: "PotentialRebel" },
-        { name: "Trinity", status: "PotentialRebel" },
-    ]
-    },
+  5: {
+  branchName: "ORDER BY clause",
+  storyNarrative: `
+    Neo needs to sort the rebels by their names.
+  `,
+  expected: [
+      { name: 'Jane Doe', status: 'PotentialRebel' },
+      { name: "Morpheus", status: "Captain" },
+      { name: "Neo", status: "PotentialRebel" },
+      { name: "Trinity", status: "PotentialRebel" },
+  ]
+  },
 
-    5: {
-    branchName: "INSERT Statement",
-    storyNarrative: `
-      Neo needs to add a new rebel to the 'residue' table.
-    `,
-    expected: [
-        "INSERT 0 1"
-    ]
-    },
+  6: {
+  branchName: "INSERT Statement",
+  storyNarrative: `
+    Neo needs to add a new rebel to the 'residue' table.
+  `,
+  expected: [
+      "INSERT 0 1"
+  ]
+  },
 
-    6: {
-    branchName: "UPDATE Statement",
-    storyNarrative: `
-      Neo needs to update the status of Trinity to 'Partner'.
-    `,
-    expected: [
-        "UPDATE 1"
-    ]
-    },
+  7: {
+  branchName: "UPDATE Statement",
+  storyNarrative: `
+    Neo needs to update the status of Trinity to 'Partner'.
+  `,
+  expected: [
+      "UPDATE 1"
+  ]
+  },
 
-    7: {
-    branchName: "DELETE Statement",
-    storyNarrative: `
-      Neo needs to remove Jane Doe from the 'residue' table.
-    `,
-    expected: [
-        "DELETE 1"
-    ]
-    },
+  8: {
+  branchName: "DELETE Statement",
+  storyNarrative: `
+    Neo needs to remove Jane Doe from the 'residue' table.
+  `,
+  expected: [
+      "DELETE 1"
+  ]
+  },
 
-    8: {
-    branchName: "basic TRANSACTION usage (ROLLBACK)",
-    storyNarrative: `
-      Neo needs to perform a transaction that should be rolled back.
-    `,
-    expected: [
-        "START TRANSACTION",
-        "ROLLBACK",
-    ]
-    },
+  9: {
+  branchName: "basic TRANSACTION usage (ROLLBACK)",
+  storyNarrative: `
+    Neo needs to perform a transaction that should be rolled back.
+  `,
+  expected: [
+      "START TRANSACTION",
+      "ROLLBACK",
+  ]
+  },
 
-    9: {
-    branchName: "basic TRANSACTION usage (COMMIT)",
-    storyNarrative: `
-      Neo needs to perform a transaction
-      that should be committed.
-    `,
-    expected: [
-        "START TRANSACTION",
-        "COMMIT",
-    ]
-    },
+  10: {
+  branchName: "basic TRANSACTION usage (COMMIT)",
+  storyNarrative: `
+    Neo needs to perform a transaction
+    that should be committed.
+  `,
+  expected: [
+      "START TRANSACTION",
+      "COMMIT",
+  ]
+  },
 };

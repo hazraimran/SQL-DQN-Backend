@@ -28,21 +28,15 @@ export class MatrixSQLEnvironment {
    * stepWithUserInput: the user enters an SQL query. We check the result with 'expectedRows'.
    * The reward is based on mastery, and the environment state is updated.
    */ 
-  public async stepWithUserInput(action: number, expectedRows: any[], userQuery: string): Promise<{
+  public async stepWithUserInput(action: number, expectedRows: any[], rows: string[]): Promise<{
     nextState: EnvState;
     reward: number;
+    correct: boolean;
   }> {
     // const userQuery = await promptUserForQuery("Enter your SQL query: ");
-    let rows: string[] = [];
-
-    try {
-      const res = await this.pool.query(userQuery);
-      rows = res.rows;
-    } catch (err) {
-      console.log("Query error:", err);
-    }
 
     const matched = compareRows(rows, expectedRows);
+    console.log("User query matched:", matched);
     const oldMastery = this.currentState.mastery[action];
 
     const masteryDelta = matched ? 0.1 : -0.05;
@@ -66,6 +60,6 @@ export class MatrixSQLEnvironment {
       this.currentState.done = true;
     }
 
-    return { nextState: {...this.currentState}, reward };
+    return { nextState: {...this.currentState}, reward, correct: matched };
   }
 }
