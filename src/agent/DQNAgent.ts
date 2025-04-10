@@ -13,6 +13,8 @@ export class DQNAgent {
   private qNetwork: QNetwork;         // online network
   private targetNetwork: QNetwork;    // target network for stable Q-learning
   private replayBuffer: ReplayBuffer; // memory for storing transitions
+  private inputDim: number;           // input dimension
+  private outputDim: number;          // output dimension
 
   private gamma: number;         // discount factor
   private epsilon: number;       // epsilon for epsilon-greedy strategy
@@ -31,6 +33,8 @@ export class DQNAgent {
     epsilonDecay = 0.995,
     updateTargetSteps = 50
   ) {
+    this.inputDim = inputDim;
+    this.outputDim = outputDim;
     this.qNetwork = new QNetwork(inputDim, outputDim);
     this.targetNetwork = new QNetwork(inputDim, outputDim);
     this.copyWeightsToTarget();
@@ -51,13 +55,21 @@ export class DQNAgent {
    * Otherwise, pick the action with the highest Q-value predicted by qNetwork.
    */
   public chooseAction(stateArr: number[]): number {
-    // 10 possible actions/ types of queries
+    // Validate state dimensions
+    if (stateArr.length !== this.inputDim) {
+      console.warn(`State dimension mismatch: expected ${this.inputDim}, got ${stateArr.length}`);
+      // Pad array if needed
+      while (stateArr.length < this.inputDim) stateArr.push(0);
+      // Or truncate
+      if (stateArr.length > this.inputDim) stateArr = stateArr.slice(0, this.inputDim);
+    }
+
     const tieThreshold = 1e-3;
 
     // Determine which actions are still available (mastery < 1)
     const availableActions = stateArr
       .map((val, idx) => ({ mastery: val, action: idx }))
-      .filter(item => item.mastery < 1)
+      .filter(item => item.mastery < 1 && item.action < this.outputDim) // Ensure within output range
       .map(item => item.action);
 
     // If all masteries are 1, pick something arbitrarily
@@ -126,8 +138,36 @@ export class DQNAgent {
     if (this.replayBuffer.size() < batchSize) return;
 
     const transitions = this.replayBuffer.sample(batchSize);
-    const states = transitions.map(t => t.state.mastery);
-    const nextStates = transitions.map(t => t.nextState.mastery);
+
+    // Ensure state dimensions match inputDim
+    const states = transitions.map(t => {
+      const mastery = t.state.mastery;
+      if (mastery.length !== this.inputDim) {
+        console.warn(`state: Mastery dimension mismatch: expected ${this.inputDim}, got ${mastery.length}`);
+        // Adjust dimensions
+        if (mastery.length < this.inputDim) {
+          return [...mastery, ...Array(this.inputDim - mastery.length).fill(0)];
+        } else {
+          return mastery.slice(0, this.inputDim);
+        }
+      }
+      return mastery;
+    });
+
+    // Similarly for nextStates
+    const nextStates = transitions.map(t => {
+      const mastery = t.nextState.mastery;
+      if (mastery.length !== this.inputDim) {
+        console.warn(`next stat: Mastery dimension mismatch: expected ${this.inputDim}, got ${mastery.length}`);
+        // Adjust dimensions
+        if (mastery.length < this.inputDim) {
+          return [...mastery, ...Array(this.inputDim - mastery.length).fill(0)];
+        } else {
+          return mastery.slice(0, this.inputDim);
+        }
+      }
+      return mastery;
+    });
 
     // Q-values predicted by the online network for current states
     const qPred = this.qNetwork.predict(states);

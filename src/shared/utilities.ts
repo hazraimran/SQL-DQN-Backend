@@ -48,32 +48,56 @@ function compareArraysDeep(arr1: any[], arr2: any[]): boolean {
   });
 }
 
-// CSV format: mastery[0], mastery[1], mastery[2], ...(*10), action, reward,
-// nextMastery[0], nextMastery[1], nextMastery[2], ...(*10)
+// CSV format: mastery[0], mastery[1], mastery[2], ...mastery[i], action, reward,
+// nextMastery[0], nextMastery[1], nextMastery[2], ...newMastery[i]
+// i mastery values, 1 action, 1 reward, i next mastery values
 export async function loadTransitionsFromCSV(csvPath: string): Promise<Transition[]> {
   const fullPath = path.resolve(csvPath);
   const content = fs.readFileSync(fullPath, "utf-8");
   const lines = content.trim().split("\n");
-  // Skip header line
-  lines.shift();
-
-  const transitions: Transition[] = lines.map(line => {
+  
+  // Parse header to determine structure
+  const header = lines[0].split(",");
+  
+  // Find indices for important elements
+  const masteryCount = header.filter(col => col.startsWith("mastery[")).length;
+  const actionIndex = masteryCount;
+  const rewardIndex = masteryCount + 1;
+  const newMasteryStartIndex = masteryCount + 2;
+  
+  console.log(`Detected ${masteryCount} mastery dimensions in CSV`);
+  
+  // Skip header and parse all data rows
+  const transitions: Transition[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue; // Skip empty lines
+    
     const parts = line.split(",").map(Number);
-    const oldMastery = parts.slice(0, 10);
-    const newMastery = parts.slice(12);
-    return {
+    
+    // Handle potential data format issues
+    if (parts.length < newMasteryStartIndex + masteryCount) {
+      console.warn(`Skipping line ${i}: insufficient data (expected ${newMasteryStartIndex + masteryCount} values, got ${parts.length})`);
+      continue;
+    }
+    
+    const oldMastery = parts.slice(0, masteryCount);
+    const newMastery = parts.slice(newMasteryStartIndex, newMasteryStartIndex + masteryCount);
+    
+    transitions.push({
       state: {
         mastery: oldMastery,
-        done: oldMastery.every(m => m >= 0.8)? true : false
+        done: oldMastery.every(m => m >= 0.8)
       },
-      action: parts[10],
-      reward: parts[11],
+      action: parts[actionIndex],
+      reward: parts[rewardIndex],
       nextState: {
         mastery: newMastery,
-        done: newMastery.every(m => m >= 0.8)? true : false
+        done: newMastery.every(m => m >= 0.8)
       }
-    };
+    });
   }
-  );
+  
+  console.log(`Loaded ${transitions.length} transitions with ${masteryCount} mastery dimensions`);
   return transitions;
 }

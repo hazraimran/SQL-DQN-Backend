@@ -1,5 +1,5 @@
 export interface EnvState {
-    mastery: number[];       // mastery of each concept (10 concepts)
+    mastery: number[];       // mastery of each concept (i concepts)
     done: boolean;           // whether the environment is done
 }
 

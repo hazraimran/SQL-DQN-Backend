@@ -30,8 +30,8 @@ async function runGame() {
     database: process.env.DB_DATABASE
   });
 
-  const inputDim = 10;   // [mastery*10]
-  const outputDim = 10;  // 10 possible actions
+  const inputDim = 5;   // [mastery*10]
+  const outputDim = 5;  // 10 possible actions
   const agent = new DQNAgent(inputDim, outputDim, 5000);  // 5000 transitions in replay buffer
   const batchSize = 16;
   const numQueryKinds = 10;

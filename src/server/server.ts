@@ -17,7 +17,6 @@ const __dirname = dirname(__filename);
 // In-memory singletons for demonstration
 let agent: DQNAgent | null = null;
 let env: MatrixSQLEnvironment | null = null;
-let numQueryTypes = 10;
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -74,8 +73,7 @@ export async function startServer(port: number) {
     try {
       const { conceptsLength } = req.body;
       console.log("Received:", { conceptsLength });
-      // await getGeneratedQuery();
-      const action = await initAgentEnv(numQueryTypes, pool);
+      const action = await initAgentEnv(conceptsLength, pool);
       res.set("Access-Control-Allow-Origin", "*");
       res.json({ action });
     } catch (error) {

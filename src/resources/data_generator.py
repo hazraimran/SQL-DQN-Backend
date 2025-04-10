@@ -1,20 +1,32 @@
 import csv
 import random
 
-# Initialize the first row of data
-data = [
-    [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 1, 1.2,
-     0.6, 0.7, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6],
-]
+# Get user input for the number of concepts
+# num_concepts = int(input("Enter the number of concept masteries: "))
+
+# For testing purposes, we can set a fixed number of concepts
+num_concepts = 5  # Example number of concepts
+# Initialize the first row of data with dynamic size
+initial_mastery = [0.6] * num_concepts  # i instances of 0.6
+action_reward = [num_concepts - 1, 1.2]  # action and reward placeholders
+# i instances with last one bumped to 0.7
+next_mastery = [0.6] * (num_concepts - 1) + [0.7]
+
+# Combine all parts for the first row
+first_row = initial_mastery + action_reward + next_mastery
+
+# Initialize data with the first row
+data = [first_row]
 
 # Generate the remaining rows
 for i in range(1, 1000):
     # Copy the nextState values from the previous row to the current state
     prev_row = data[i - 1]
-    state = prev_row[12:]
+    state = prev_row[num_concepts + 2:]  # Skip the previous action and reward
     new_state = state.copy()
 
-    action = random.randint(0, 9)
+    # Random action between 0 and num_concepts-1
+    action = random.randint(0, num_concepts - 1)
 
     # Calculate reward based on action
     reward = 0
@@ -32,19 +44,25 @@ for i in range(1, 1000):
 
     # Append the new row
     data.append(state + [action, round(reward, 1)] + new_state)
+
+    # Stop if all masteries reach 0.7 or higher
     if all(mastery >= 0.7 for mastery in new_state):
         break
 
+# Create dynamic header row based on num_concepts
+header = []
+for i in range(num_concepts):
+    header.append(f"mastery[{i}]")
+header.append("action")
+header.append("reward")
+for i in range(num_concepts):
+    header.append(f"newMastery[{i}]")
+
 # Append the data to a CSV file
-with open("src/resources/generated_data.csv", "w", newline="") as file:
+with open("generated_data.csv", "w", newline="") as file:
     writer = csv.writer(file)
-    writer.writerow(["mastery[0]", "mastery[1]", "mastery[2]", "mastery[3]",
-                     "mastery[4]", "mastery[5]", "mastery[6]", "mastery[7]",
-                     "mastery[8]", "mastery[9]", "action", "reward",
-                     "newMastery[0]", "newMastery[1]", "newMastery[2]",
-                     "newMastery[3]", "newMastery[4]", "newMastery[5]",
-                     "newMastery[6]", "newMastery[7]", "newMastery[8]",
-                     "newMastery[9]"])
+    writer.writerow(header)
     writer.writerows(data)
 
-print("CSV file generated successfully!")
+print(
+    f"CSV file generated successfully with {num_concepts} concept masteries!")
