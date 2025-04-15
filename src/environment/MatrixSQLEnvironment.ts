@@ -1,6 +1,6 @@
 import { Pool } from "pg";
-import { EnvState } from "../shared/types";
-import { compareRows } from "../shared/utilities";
+import { EnvState } from "../types/types";
+import { compareRows } from "../types/utilities";
 
 export class MatrixSQLEnvironment {
   private currentState: EnvState;

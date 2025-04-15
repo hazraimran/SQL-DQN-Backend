@@ -1,4 +1,4 @@
-import { Transition } from "../shared/types";
+import { Transition } from "../types/types";
 
 /**
  * ReplayBuffer stores and samples transitions for training the DQN.

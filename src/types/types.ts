@@ -3,11 +3,6 @@ export interface EnvState {
     done: boolean;           // whether the environment is done
 }
 
-export interface DifficultyInfo {
-  name: string;
-  scenario: string;
-}
-
 /**
  * A Transition represents a single step (state, action, reward, nextState, done)
  * for training the DQN.
@@ -17,4 +12,19 @@ export interface Transition {
   action: number;      // which action was chosen (e.g., 0 or 1)
   reward: number;      // reward received after taking the action
   nextState: EnvState; // next state after the action
+}
+
+export interface DbConfig {
+  user: string;
+  password: string;
+  host: string;
+  port: number;
+  database: string;
+}
+
+export interface ApiResponse<T> {
+  data?: T;
+  error?: boolean;
+  message?: string;
+  type?: string;
 }

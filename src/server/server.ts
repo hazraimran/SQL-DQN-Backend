@@ -6,8 +6,8 @@ import { DQNAgent } from "../agent/DQNAgent";
 import { MatrixSQLEnvironment } from "../environment/MatrixSQLEnvironment";
 import pg from "pg";
 const { Pool } = pg;
-import { Transition } from "../shared/types";
-import { loadTransitionsFromCSV } from "../shared/utilities";
+import { Transition } from "../types/types";
+import { loadTransitionsFromCSV } from "../types/utilities";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -81,30 +81,6 @@ export async function startServer(port: number) {
       return res.status(400).json({ error: "Invalid request" });
     }
   });
-
-  // app.get("/api/init", async (req: Request, res: Response) => {
-  //   // Suppose we have 10 query types:
-  //   const numQueryTypes = 10;
-  //   // Create environment (assuming you have a PG pool or similar)
-  //   const pool = new Pool({
-  //       user: process.env.DB_USER,
-  //       password: process.env.DB_PASSWORD,
-  //       host: process.env.DB_HOST,
-  //       port: Number(process.env.DB_PORT || 5432),
-  //       database: process.env.DB_DATABASE
-  //     });
-
-  //   env = new MatrixSQLEnvironment(numQueryTypes, pool);
-  //   env.reset();
-
-  //   // create agent
-  //   const inputDim = 10; // or how you define your mastery array dimension
-  //   const outputDim = 10;
-  //   agent = new DQNAgent(inputDim, outputDim, 5000);
-  //   await preTrain(agent);
-    
-  //   res.json({ message: "Initialization done. Agent & Env created." });
-  // });
 
   // Endpoint: user submits an SQL query, environment steps
   app.post("/submit-query", async (req: Request, res: Response) => {

@@ -1,6 +1,6 @@
 import { QNetwork } from "./QNetwork";
 import { ReplayBuffer } from "./ReplayBuffer";
-import { Transition } from "../shared/types";
+import { Transition } from "../types/types";
 
 /**
  * DQNAgent manages:
