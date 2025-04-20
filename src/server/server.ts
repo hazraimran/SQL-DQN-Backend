@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import apiRoutes from './routes/api.routes';
 import { errorMiddleware } from './middleware/error.middleware';
-import { initDbPool } from '../utils/database.utils';
+import { initDbPool } from '../services/database.service';
 
 // Get directory name for serving static files
 const __filename = fileURLToPath(import.meta.url);

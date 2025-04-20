@@ -22,7 +22,7 @@ This game adapts SQL puzzle level based on player's mastery using a Deep Q-Netwo
 ## Usage
 1. Clone the repository.
 2. Install the dependencies using `npm install`.
-3. Run the server using `npx tsx src/index.ts`.
+3. Run the server using `npm run start`.
 
 ## Project Structure
 ```bash
@@ -44,7 +44,6 @@ sql-dqn/
 │   │   └── MatrixSQLEnvironment.ts  # Environment for SQL game interactions
 │   │
 │   ├── resources/            # Data and query resources
-│   │   ├── easy_queries.ts   # SQL challenges with narratives
 │   │   ├── data_generator.py # Python script to generate training data
 │   │   └── generated_data.csv # Pre-generated training data
 │   │
@@ -58,18 +57,14 @@ sql-dqn/
 │   │   └── routes/           # API routes
 │   │       └── api.routes.ts # Route definitions
 │   │
-│   ├── types/                # Type definitions
-│   │   └── index.ts          # Shared TypeScript interfaces
+│   ├── services/
+│   │   └── agent.service.ts # Agent initialization services
+|   |   ├── database.service.ts/ # Database connection and models
+│   │   ├── training.service.ts  # Agent training services
 │   │
-│   └── utils/                # Utility functions
-│       ├── database.utils.ts # Database connection helpers
-│       └── training.utils.ts # Training data processing utilities
-│
-├── public/                   # Frontend static files
-│   ├── index.html            # Main HTML page with UI structure
-│   ├── script.js             # Frontend JavaScript (event handlers, API calls)
-│   └── styles.css            # CSS styles for the game interface
-│
+│   ├── types/                # Type definitions
+│   │   └── index.ts          # TypeScript interfaces
+│   │
 └── README.md                 # Project documentation
 ```
 

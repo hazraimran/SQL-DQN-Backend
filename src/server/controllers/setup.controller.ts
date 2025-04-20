@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { initAgentEnv } from '../../services/agent.service';
-import { getDbPool } from '../../utils/database.utils';
+import { getDbPool } from '../../services/database.service';
 
 /**
  * Handle setup form submissions

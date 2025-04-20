@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { EnvState } from "../types/types";
-import { compareRows } from "../utils/training.utils";
+import { compareRows } from "../services/training.service";
 
 export class MatrixSQLEnvironment {
   private currentState: EnvState;
@@ -33,8 +33,7 @@ export class MatrixSQLEnvironment {
     reward: number;
     correct: boolean;
   }> {
-    // const userQuery = await promptUserForQuery("Enter your SQL query: ");
-
+    console.log("currentState Mastery:", this.currentState.mastery);
     const matched = compareRows(rows, expectedRows);
     console.log("User query matched:", matched);
     const oldMastery = this.currentState.mastery[action];

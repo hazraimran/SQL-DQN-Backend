@@ -1,18 +1,48 @@
 import { DQNAgent } from '../agent/DQNAgent';
 import { MatrixSQLEnvironment } from '../environment/MatrixSQLEnvironment';
 import { Pool } from 'pg';
-import { loadTransitionsFromCSV } from '../utils/training.utils';
+import { loadTransitionsFromCSV } from './training.service';
 import { Transition } from '../types/types';
 import path from 'path';
+import { execSync } from 'child_process';
 
 // Singleton instances for agent and environment
 let agent: DQNAgent | null = null;
 let env: MatrixSQLEnvironment | null = null;
+let action: number;
+
+/**
+ * Generate training data using Python script
+ */
+function generateTrainingData(numQueryTypes: number): void {
+  try {
+    console.log(`Generating training data for ${numQueryTypes} query types...`);
+    
+    // Path to Python script
+    const pythonScriptPath = path.resolve('src/resources/data_generator.py');
+    
+    // Execute Python script with numQueryTypes as argument
+    const result = execSync(`python ${pythonScriptPath} ${numQueryTypes}`, {
+      encoding: 'utf-8',
+      cwd: path.resolve('src/resources')
+    });
+    
+    console.log(result);
+  } catch (error) {
+    console.error('Failed to generate training data:', error);
+    throw new Error(`Training data generation failed: ${error.message}`);
+  }
+}
 
 /**
  * Pre-train agent with transitions from CSV file
  */
-export async function preTrain(dqnAgent: DQNAgent): Promise<void> {
+export async function preTrain(dqnAgent: DQNAgent, numQueryTypes: number): Promise<void> {
+  console.log('Generating training data...');
+  
+  // Generate fresh training data with the specified number of query types
+  generateTrainingData(numQueryTypes);
+  
   console.log('Loading transitions from CSV...');
   const csvPath = path.resolve('src/resources/generated_data.csv');
   const transitions = await loadTransitionsFromCSV(csvPath);
@@ -41,13 +71,13 @@ export async function initAgentEnv(
   
   // Pre-train if requested
   if (preTrainAgent) {
-    await preTrain(agent);
+    await preTrain(agent, numQueryTypes);
   }
   
   // Get initial state and choose action
   const oldState = env.getState();
-  const action = agent.chooseAction(oldState.mastery);
-  
+  action = agent.chooseAction(oldState.mastery);
+  console.log('Agent chose action from initAgentEnv:', action);
   return action;
 }
 
@@ -88,8 +118,6 @@ export async function processUserQuery(
 
   // Get current state and choose action
   const oldState = env.getState();
-  const action = agent.chooseAction(oldState.mastery);
-  console.log('Agent chose action:', action);
 
   // Step the environment with user input
   const { nextState, reward, correct } = await env.stepWithUserInput(
@@ -98,6 +126,10 @@ export async function processUserQuery(
     resultFromDB.rows
   );
 
+  console.log('Mastery from Next state:', nextState.mastery);
+
+  action = agent.chooseAction(oldState.mastery);
+  console.log('Agent chose action:', action);
   // Create transition and have agent observe it
   const transition: Transition = {
     state: oldState,

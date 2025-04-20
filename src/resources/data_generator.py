@@ -1,11 +1,16 @@
 import csv
 import random
+import sys  # Add sys module to access command line arguments
 
-# Get user input for the number of concepts
-# num_concepts = int(input("Enter the number of concept masteries: "))
+# Get number of concepts from command line arguments
+if len(sys.argv) > 1:
+    num_concepts = int(sys.argv[1])
+else:
+    # Default to 5 concepts if no argument provided
+    num_concepts = 5
 
-# For testing purposes, we can set a fixed number of concepts
-num_concepts = 5  # Example number of concepts
+print(f"Generating data for {num_concepts} concept masteries...")
+
 # Initialize the first row of data with dynamic size
 initial_mastery = [0.6] * num_concepts  # i instances of 0.6
 action_reward = [num_concepts - 1, 1.2]  # action and reward placeholders
