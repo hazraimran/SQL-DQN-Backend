@@ -12,17 +12,17 @@ let env: MatrixSQLEnvironment | null = null;
 let action: number;
 
 /**
- * Generate training data using Python script
+ * Generate training data using script
  */
 function generateTrainingData(numQueryTypes: number): void {
   try {
     console.log(`Generating training data for ${numQueryTypes} query types...`);
     
-    // Path to Python script
-    const pythonScriptPath = path.resolve('src/resources/data_generator.py');
+    // Path to script
+    const scriptPath = path.resolve('src/resources/data_generator.py');
     
-    // Execute Python script with numQueryTypes as argument
-    const result = execSync(`python ${pythonScriptPath} ${numQueryTypes}`, {
+    // Execute script with numQueryTypes as argument
+    const result = execSync(`npx tsx ${scriptPath} ${numQueryTypes}`, {
       encoding: 'utf-8',
       cwd: path.resolve('src/resources')
     });
