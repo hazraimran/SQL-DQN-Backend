@@ -4,7 +4,7 @@ import { DbConfig } from '../types/types';
 
 dotenv.config();
 
-// Singleton pool instance
+// Database singleton instance
 let pool: pg.Pool | null = null;
 
 /**
@@ -21,45 +21,24 @@ export function getDbConfig(): DbConfig {
 }
 
 /**
- * Initialize database connection pool with custom config
+ * Initialize database connection pool
  */
-export function initDbPool(customConfig?: Partial<DbConfig>): pg.Pool {
+export function initDbPool(config?: DbConfig): pg.Pool {
   if (pool) return pool;
   
-  const defaultConfig = getDbConfig();
-  const config = { ...defaultConfig, ...customConfig };
+  const dbConfig = config || getDbConfig();
+  pool = new pg.Pool(dbConfig);
   
-  // Determine environment
-  const isProd = process.env.NODE_ENV === 'production';
-  
-  // Create pool with appropriate settings for environment
-  pool = new pg.Pool({
-    ...config,
-    ssl: process.env.DB_SSL === 'true' || isProd 
-      ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' } 
-      : false,
-    // Connection pool settings
-    max: Number(process.env.DB_POOL_MAX || (isProd ? 1 : 10)),
-    idleTimeoutMillis: Number(process.env.DB_IDLE_TIMEOUT || 120000),
-    connectionTimeoutMillis: Number(process.env.DB_CONNECTION_TIMEOUT || 10000)
-  });
-  
-  // Handle pool errors
+  // Add error handler to prevent app crashes on connection issues
   pool.on('error', (err) => {
-    console.error('Unexpected database pool error:', err);
-    
-    // If in production and the connection was terminated/lost, attempt to recreate the pool
-    if (isProd && (err.code === 'ECONNRESET' || err.code === '57P01')) {
-      console.log('Connection terminated, will recreate pool on next request');
-      pool = null;
-    }
+    console.error('Unexpected database error:', err);
   });
   
   return pool;
 }
 
 /**
- * Get the database pool instance - creates a singleton pool if it doesn't exist
+ * Get the database pool instance
  */
 export function getDbPool(): pg.Pool {
   if (!pool) {
@@ -69,17 +48,11 @@ export function getDbPool(): pg.Pool {
 }
 
 /**
- * Close the pool when the application terminates
+ * Close the database pool connection
  */
 export async function closeDbPool(): Promise<void> {
-  if (!pool) return Promise.resolve();
-  
-  try {
+  if (pool) {
     await pool.end();
     pool = null;
-    console.log('Database pool closed successfully');
-  } catch (error) {
-    console.error('Error closing database pool:', error);
-    throw error;
   }
 }

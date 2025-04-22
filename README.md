@@ -69,7 +69,9 @@ sql-dqn/
 ```
 
 ## To-Do
-- [ ] Check why the DQN agent will choose the same action once when the mastery is equal to 1.
+- [x] Check why the DQN agent will choose the same action once when the mastery is equal to 1.
+- [x] Check the other two themes
+- [ ] External API to give informative error message
 - [ ] Write tests, fix bugs and check for edge cases.
 
 ## Schema
@@ -132,3 +134,146 @@ sql-dqn/
     | 102      | 2023-01-01 10:00:00 | Rooftop       | TRUE              |
     | 102      | 2023-01-01 10:15:00 | SubwayStation | TRUE              |
     | 103      | 2023-01-01 10:30:00 | NULL          | FALSE             |
+
+### Fantasy
+- `rings`
+    | column_name       | data_type   |
+    | ----------------- | ----------- |
+    | name              | VARCHAR(50) |
+    | profession        | VARCHAR(50) |
+
+    | name    | profession  |
+    | ------- | ----------- |
+    | Aragorn | Ranger      |
+    | Frodo   | RingBearer  |
+    | Gandalf | Wizard      |
+    | Gollum  | NULL        |
+    | Legolas | ElvenArcher |
+    | Samwise | Gardener    |
+    | Bilbo   | RingBearer  |
+    | Sauron  | DarkLord    |
+
+- `chronicles`
+
+    | column_name       | data_type   |
+    | ----------------- | ----------- |
+    | quest_name        | VARCHAR(50) |
+    | quest_description | TEXT        |
+
+    | quest_name              | quest_description                                |
+    | ----------------------- | ------------------------------------------------ |
+    | Protect the Ring        | Ensure the One Ring never falls into evil hands. |
+    | Assemble the Fellowship | Gather heroes from across Middle‑earth.          |
+    | Defend Minas Tirith     | Hold the White City against Sauron’s armies.     |
+    | Crown the King          | Place the rightful king upon the throne.         |
+    | Restore the Shire       | Rebuild the Hobbits' homeland after the war.     |
+
+- `quest_logs`
+
+    | column_name | data_type   |
+    | ----------- | ----------- |
+    | quest_name  | VARCHAR(50) |
+    | hero_id     | INT         |
+    | reference   | TEXT        |
+
+    | quest_name              | hero_id | reference                                    |
+    | ----------------------- | ------- | -------------------------------------------- |
+    | Protect the Ring        | 2       | Frodo sets out from the Shire.               |
+    | Protect the Ring        | 6       | Samwise pledges never to leave Frodo’s side. |
+    | Assemble the Fellowship | 3       | Council of Elrond chooses nine companions.   |
+    | Assemble the Fellowship | 5       | Legolas swears loyalty to Aragorn.           |
+    | Defend Minas Tirith     | 3       | Gandalf rallies the defenders at the gate.   |
+    | Defend Minas Tirith     | 1       | Aragorn arrives with the Army of the Dead.   |
+    | Crown the King          | 1       | Aragorn crowned Elessar Telcontar.           |
+    | Restore the Shire       | 2       | Hobbits return to drive out the ruffians.    |
+
+- `battle_summaries`
+
+    | column_name | data_type    |
+    | ----------- | ------------ |
+    | hero_id     | INT          |
+    | timestamp   | TIMESTAMP    |
+    | location    | VARCHAR (50) |
+    | victory     | BOOLEAN      |
+
+    | hero_id | timestamp           | location       | victory |
+    | ------- | ------------------- | -------------- | ------- |
+    | 1       | 2025‑03‑05 09:15:00 | PelennorFields | TRUE    |
+    | 2       | 2025‑03‑05 09:30:00 | MountDoom      | TRUE    |
+    | 4       | 2025‑03‑05 09:45:00 | MountDoom      | NULL    |
+    | 3       | 2025‑03‑05 10:00:00 | NULL           | TRUE    |
+    | 5       | 2025‑03‑05 10:15:00 | HelmsDeep      | TRUE    |
+    | 6       | 2025‑03‑05 10:30:00 | Shire          | FALSE   |
+
+### Real World
+
+- `movies`
+
+    | column_name | data_type    |
+    | ----------- | ------------ |
+    | movie_name  | VARCHAR (50) |
+    | genre       | VARCHAR (50) |
+
+    | movie_name            | genre     |
+    | --------------------- | --------- |
+    | Inception             | Sci-Fi    |
+    | La La Land            | Musical   |
+    | The Godfather         | Crime     |
+    | The Matrix            | Sci-Fi    |
+    | Finding Nemo          | Animation |
+    | Unknown Project       | NULL      |
+    | The Lord of the Rings | Fantasy   |
+
+- `reviews`
+
+    | column_name | data_type    |
+    | ----------- | ------------ |
+    | movie_name  | VARCHAR (50) |
+    | review_text | TEXT         |
+    | rating      | INT          |
+
+    | movie_name      | review_text                                 | rating |
+    | --------------- | ------------------------------------------- | ------ |
+    | Inception       | “A mind‑bending blockbuster.”               | 9      |
+    | Inception       | “Too complex on first watch.”               | 7      |
+    | The Matrix      | “Classic cyber‑action that still holds up.” | 9      |
+    | The Matrix      | “Bullet‑time changed cinema forever.”       | 10     |
+    | La La Land      | “Musical romance with modern flair.”        | 8      |
+    | The Godfather   | “An offer you can’t refuse.”                | 10     |
+    | Unknown Project | “Still in production…”                      | NULL   |
+
+- `actors`
+
+    | column_name | data_type    |
+    | ----------- | ------------ |
+    | movie_name  | VARCHAR (50) |
+    | user_id     | INT          |
+
+    | movie_name      | user_id |
+    | --------------- | ------- |
+    | Inception       | 101     |
+    | Inception       | 102     |
+    | The Matrix      | 103     |
+    | The Matrix      | 104     |
+    | The Matrix      | 105     |
+    | La La Land      | 106     |
+    | The Godfather   | 107     |
+    | Finding Nemo    | 108     |
+    | Unknown Project | 109     |
+
+- `collections`
+
+    | column_name | data_type    |
+    | ----------- | ------------ |
+    | movie_name  | VARCHAR (50) |
+    | timestamp   | TIMESTAMP    |
+    | shared      | BOOLEAN      |
+
+    | movie_name      | timestamp           | shared |
+    | --------------- | ------------------- | ------ |
+    | The Matrix      | 2025‑03‑05 09:15:00 | TRUE   |
+    | Inception       | 2025‑03‑05 09:30:00 | TRUE   |
+    | La La Land      | 2025‑03‑05 10:00:00 | FALSE  |
+    | The Matrix      | 2025‑03‑05 10:15:00 | FALSE  |
+    | Finding Nemo    | 2025‑03‑05 10:45:00 | TRUE   |
+    | Unknown Project | 2025‑03‑05 11:00:00 | NULL   |
