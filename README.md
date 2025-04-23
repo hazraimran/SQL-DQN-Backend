@@ -71,7 +71,7 @@ sql-dqn/
 ## To-Do
 - [x] Check why the DQN agent will choose the same action once when the mastery is equal to 1.
 - [x] Check the other two themes
-- [ ] External API to give informative error message
+- [x] External API to give informative error message
 - [ ] Write tests, fix bugs and check for edge cases.
 
 ## Schema
