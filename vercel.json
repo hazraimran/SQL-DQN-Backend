@@ -12,6 +12,9 @@
       "dest": "/api/index.ts"
     }
   ],
+  "functions": {
+    "excludeFiles": "{.next,*.cache,node_modules}/**"
+  },
   "env": {
     "NODE_ENV": "production"
   }

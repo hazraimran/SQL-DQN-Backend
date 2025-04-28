@@ -3,36 +3,11 @@ import { SQLEnvironment } from '../environment/SQLEnvironment';
 import { Pool } from 'pg';
 import { loadTransitionsFromCSV } from './training.service';
 import { Transition } from '../types/types';
-import path from 'path';
-import { execSync } from 'child_process';
 
 // Singleton instances for agent and environment
 let agent: DQNAgent | null = null;
 let env: SQLEnvironment | null = null;
 let action: number;
-
-/**
- * Generate training data using script
- */
-function generateTrainingData(numQueryTypes: number): void {
-  try {
-    console.log(`Generating training data for ${numQueryTypes} query types...`);
-    
-    // Path to script
-    const scriptPath = path.resolve('src/resources/data_generator.py');
-    
-    // Execute script with numQueryTypes as argument
-    const result = execSync(`npx tsx ${scriptPath} ${numQueryTypes}`, {
-      encoding: 'utf-8',
-      cwd: path.resolve('src/resources')
-    });
-    
-    console.log(result);
-  } catch (error) {
-    console.error('Failed to generate training data:', error);
-    throw new Error(`Training data generation failed: ${error.message}`);
-  }
-}
 
 /**
  * Pre-train agent with transitions from CSV file
