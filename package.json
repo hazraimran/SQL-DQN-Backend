@@ -1,13 +1,12 @@
 {
-  "name": "matrix-sql-dqn",
+  "name": "sql-dqn-backend",
   "version": "1.0.0",
   "type": "module",
   "main": "api/index.js",
   "scripts": {
-    "start": "npx tsx src/index.ts",
-    "dev": "vercel dev",
+    "dev": "ts-node-dev --respawn api/index.ts",
     "build": "tsc",
-    "deploy": "vercel deploy --prod"
+    "start": "node dist/api/index.js"
   },
   "keywords": [],
   "author": "",

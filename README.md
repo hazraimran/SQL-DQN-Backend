@@ -41,7 +41,7 @@ sql-dqn/
 │   │   └── ReplayBuffer.ts   # Experience replay memory
 │   │
 │   ├── environment/          # Game environment
-│   │   └── MatrixSQLEnvironment.ts  # Environment for SQL game interactions
+│   │   └── SQLEnvironment.ts  # Environment for SQL game interactions
 │   │
 │   ├── resources/            # Data and query resources
 │   │   ├── data_generator.py # Python script to generate training data

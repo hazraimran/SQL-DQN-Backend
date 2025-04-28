@@ -1,5 +1,5 @@
 import { DQNAgent } from '../agent/DQNAgent';
-import { MatrixSQLEnvironment } from '../environment/MatrixSQLEnvironment';
+import { SQLEnvironment } from '../environment/SQLEnvironment';
 import { Pool } from 'pg';
 import { loadTransitionsFromCSV } from './training.service';
 import { Transition } from '../types/types';
@@ -8,7 +8,7 @@ import { execSync } from 'child_process';
 
 // Singleton instances for agent and environment
 let agent: DQNAgent | null = null;
-let env: MatrixSQLEnvironment | null = null;
+let env: SQLEnvironment | null = null;
 let action: number;
 
 /**
@@ -37,15 +37,15 @@ function generateTrainingData(numQueryTypes: number): void {
 /**
  * Pre-train agent with transitions from CSV file
  */
-export async function preTrain(dqnAgent: DQNAgent, numQueryTypes: number): Promise<void> {
-  console.log('Generating training data...');
+export async function preTrain(dqnAgent: DQNAgent, csvFile: string): Promise<void> {
+  // console.log('Generating training data...');
   
   // Generate fresh training data with the specified number of query types
-  generateTrainingData(numQueryTypes);
+  // generateTrainingData(numQueryTypes);
   
-  console.log('Loading transitions from CSV...');
-  const csvPath = path.resolve('src/resources/generated_data.csv');
-  const transitions = await loadTransitionsFromCSV(csvPath);
+  // console.log('Loading transitions from CSV...');
+  // const csvPath = path.resolve('src/resources/generated_data.csv');
+  const transitions = await loadTransitionsFromCSV(csvFile);
 
   console.log('Starting offline training (10 epochs) with batchSize=32...');
   await dqnAgent.offlineTrain(transitions);
@@ -58,10 +58,11 @@ export async function preTrain(dqnAgent: DQNAgent, numQueryTypes: number): Promi
 export async function initAgentEnv(
   numQueryTypes: number, 
   pool: Pool, 
-  preTrainAgent: boolean = true
+  preTrainAgent: boolean = true,
+  masteryFile: string = ''
 ): Promise<number> {
   // Create environment
-  env = new MatrixSQLEnvironment(numQueryTypes, pool);
+  env = new SQLEnvironment(numQueryTypes, pool);
   env.reset();
 
   // Create agent with matching dimensions
@@ -71,7 +72,7 @@ export async function initAgentEnv(
   
   // Pre-train if requested
   if (preTrainAgent) {
-    await preTrain(agent, numQueryTypes);
+    await preTrain(agent, masteryFile);
   }
   
   // Get initial state and choose action
@@ -91,7 +92,7 @@ export function getAgent(): DQNAgent | null {
 /**
  * Get current environment instance
  */
-export function getEnvironment(): MatrixSQLEnvironment | null {
+export function getEnvironment(): SQLEnvironment | null {
   return env;
 }
 

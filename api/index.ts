@@ -1,29 +1,27 @@
 import express from 'express';
-import { json } from 'body-parser';
 import apiRoutes from '../src/server/routes/api.routes';
 import { errorMiddleware } from '../src/server/middleware/error.middleware';
-import { initDbPool } from '../src/services/database.service';
+import { corsMiddleware } from '../src/server/middleware/cors.middleware';
+import { getDbPool } from '../src/services/database.service';
 
-// Initialize database connection
-initDbPool();
-
-// Create Express app
+// Initialize Express application
 const app = express();
 
 // Apply middleware
-app.use(json());
-app.use(express.static('public'));
+app.use(express.json());
+app.use(corsMiddleware);
 
-// CORS headers
+// Initialize database connection
+const pool = getDbPool();
+
+// Add pool to request object
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
+  req.dbPool = pool;
   next();
 });
 
 // API routes
-app.use(apiRoutes);
+app.use('/api', apiRoutes);
 
 // Error handling middleware
 app.use(errorMiddleware);

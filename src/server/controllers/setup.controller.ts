@@ -11,18 +11,21 @@ export async function setupController(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { conceptsLength } = req.body;
+    const { conceptsLength, masteryFile } = req.body;
     
     // Validate input
     if (!conceptsLength || typeof conceptsLength !== 'number' || conceptsLength <= 0) {
       throw new Error('Invalid conceptsLength: must be a positive number');
     }
+
+    // Check if masteryFile is provided
+    const preTrainAgent = masteryFile && masteryFile.length > 0;
     
-    console.log('Received setup request:', { conceptsLength });
+    // console.log('Received setup request:', { conceptsLength });
     
     // Get database pool and initialize agent
     const pool = getDbPool();
-    const action = await initAgentEnv(conceptsLength, pool);
+    const action = await initAgentEnv(conceptsLength, pool, preTrainAgent, masteryFile);
     
     // Return success response
     res.json({ action });

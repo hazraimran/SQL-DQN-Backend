@@ -20,6 +20,12 @@ export interface DbConfig {
   host: string;
   port: number;
   database: string;
+  max: number;
+  idleTimeoutMillis: number;
+  connectionTimeoutMillis: number;
+  ssl?: {
+    rejectUnauthorized: boolean;
+  } | undefined;
 }
 
 export interface ApiResponse<T> {

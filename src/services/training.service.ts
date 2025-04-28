@@ -5,10 +5,8 @@ import { Transition } from '../types/types';
 /**
  * Load transitions from CSV file for agent training
  */
-export async function loadTransitionsFromCSV(csvPath: string): Promise<Transition[]> {
-  const fullPath = path.resolve(csvPath);
-  const content = fs.readFileSync(fullPath, 'utf-8');
-  const lines = content.trim().split('\n');
+export async function loadTransitionsFromCSV(csvFile: string): Promise<Transition[]> {
+  const lines = csvFile.trim().split('\n');
   
   // Parse header to determine structure
   const header = lines[0].split(',');
