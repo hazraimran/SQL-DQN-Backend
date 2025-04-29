@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import { EnvState } from "../types/types";
 import { compareRows } from "../services/training.service";
 
-export class MatrixSQLEnvironment {
+export class SQLEnvironment {
   private currentState: EnvState;
 
   constructor(

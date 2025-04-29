@@ -1,5 +1,5 @@
 import { DQNAgent } from '../agent/DQNAgent';
-import { MatrixSQLEnvironment } from '../environment/MatrixSQLEnvironment';
+import { SQLEnvironment } from '../environment/SQLEnvironment';
 import { Pool } from 'pg';
 import { loadTransitionsFromCSV } from './training.service';
 import { Transition } from '../types/types';
@@ -8,7 +8,7 @@ import { execSync } from 'child_process';
 
 // Singleton instances for agent and environment
 let agent: DQNAgent | null = null;
-let env: MatrixSQLEnvironment | null = null;
+let env: SQLEnvironment | null = null;
 let action: number;
 
 /**
@@ -61,7 +61,7 @@ export async function initAgentEnv(
   preTrainAgent: boolean = true
 ): Promise<number> {
   // Create environment
-  env = new MatrixSQLEnvironment(numQueryTypes, pool);
+  env = new SQLEnvironment(numQueryTypes, pool);
   env.reset();
 
   // Create agent with matching dimensions
@@ -91,7 +91,7 @@ export function getAgent(): DQNAgent | null {
 /**
  * Get current environment instance
  */
-export function getEnvironment(): MatrixSQLEnvironment | null {
+export function getEnvironment(): SQLEnvironment | null {
   return env;
 }
 

@@ -20,9 +20,25 @@ This game adapts SQL puzzle level based on player's mastery using a Deep Q-Netwo
 - **API**: RESTful endpoints for game state management
 
 ## Usage
-1. Clone the repository.
-2. Install the dependencies using `npm install`.
-3. Run the server using `npm run start`.
+> **Note**: This project requires a PostgreSQL database and a frontend.
+1. Clone the repository and install the dependencies:
+```bash
+npm install
+```
+
+2. Create a `.env` file in the root directory with:
+```bash
+DB_USER=your_postgres_user
+DB_PASSWORD=your_postgres_password
+DB_HOST=your_postgres_host_address
+DB_PORT=your_postgres_port
+DB_DATABASE=your_postgres_database_name
+DB_URL=postgresql://your_postgres_user:your_postgres_password@your_postgres_host_address:your_postgres_port/your_postgres_database_name
+PORT=your_desired_port
+```
+3. Create a PostgreSQL database and run the SQL scripts to set up the required schemas. You can use the provided SQL schemas below to create the necessary tables and insert sample data.
+
+4. Run the server using `npm run start`.
 
 ## Project Structure
 ```bash
@@ -41,7 +57,7 @@ sql-dqn/
 │   │   └── ReplayBuffer.ts   # Experience replay memory
 │   │
 │   ├── environment/          # Game environment
-│   │   └── MatrixSQLEnvironment.ts  # Environment for SQL game interactions
+│   │   └── SQLEnvironment.ts  # Environment for SQL game interactions
 │   │
 │   ├── resources/            # Data and query resources
 │   │   ├── data_generator.py # Python script to generate training data
@@ -72,6 +88,13 @@ sql-dqn/
 - [x] Check why the DQN agent will choose the same action once when the mastery is equal to 1.
 - [x] Check the other two themes
 - [x] External API to give informative error message
+- [ ] Add more tasks to cybernetics’s case
+- [ ] File upload part make it take in a file and parse it
+- [ ] Add a user authentication for:
+    - [ ] Storing all previous narratives
+    - [ ] Summarize the narratives at the end and generate a report on the mastery of SQL concepts
+- [ ] Different UIs for different themes
+- [ ] Add a mapping service to avoid direct interactions with real databases
 - [ ] Write tests, fix bugs and check for edge cases.
 
 ## Schema
