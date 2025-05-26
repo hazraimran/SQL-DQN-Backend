@@ -22,7 +22,7 @@ function generateTrainingData(numQueryTypes: number): void {
     const pythonScriptPath = path.resolve('src/resources/data_generator.py');
     
     // Execute Python script with numQueryTypes as argument
-    const result = execSync(`python ${pythonScriptPath} ${numQueryTypes}`, {
+    const result = execSync(`python3 ${pythonScriptPath} ${numQueryTypes}`, {
       encoding: 'utf-8',
       cwd: path.resolve('src/resources')
     });

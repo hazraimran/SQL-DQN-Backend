@@ -4,8 +4,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "npx tsx src/index.ts",
-    "dev": "npx src/index.ts --dev"
+    "start": "node --no-deprecation ./node_modules/.bin/tsx src/index.ts",
+    "dev": "node --no-deprecation ./node_modules/.bin/tsx src/index.ts --dev"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +18,8 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "@tensorflow/tfjs-node": "^4.22.0",
+    "@tensorflow/tfjs-node": "4.17.0",
+    "@tensorflow/tfjs": "4.17.0",
     "@types/pg": "^8.11.11",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
