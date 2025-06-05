@@ -28,9 +28,10 @@ function generateTrainingData(numQueryTypes: number): void {
     });
     
     console.log(result);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Failed to generate training data:', error);
-    throw new Error(`Training data generation failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new Error(`Training data generation failed: ${errorMessage}`);
   }
 }
 
