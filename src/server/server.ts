@@ -11,9 +11,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 /**
- * Start the Express server
+ * Create Express application
  */
-export async function startServer(port: number): Promise<void> {
+export function createServer(): express.Application {
   // Initialize database pool
   initDbPool();
   
@@ -26,21 +26,50 @@ export async function startServer(port: number): Promise<void> {
   // Serve static files
   app.use(express.static(join(__dirname, '../../public')));
   
-  // CORS headers
+  // CORS headers - 更新允许的源
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://your-frontend-domain.vercel.app' // 替换为你的前端域名
+    ];
+    
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin as string)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    }
+    
     res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
+    
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+    }
+    
     next();
   });
   
   // API routes
-  app.use(apiRoutes);
+  app.use('/api', apiRoutes); // 添加 /api 前缀
+  
+  // 健康检查端点
+  app.get('/', (req, res) => {
+    res.json({ message: 'SQL DQN Backend is running!' });
+  });
   
   // Error handling middleware
   app.use(errorMiddleware);
   
-  // Start server
+  return app;
+}
+
+/**
+ * Start the Express server (for local development)
+ */
+export async function startServer(port: number): Promise<void> {
+  const app = createServer();
+  
   return new Promise((resolve) => {
     app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`);

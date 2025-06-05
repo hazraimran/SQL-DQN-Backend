@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node --no-deprecation ./node_modules/.bin/tsx src/index.ts",
-    "dev": "node --no-deprecation ./node_modules/.bin/tsx src/index.ts --dev"
+    "dev": "node --no-deprecation ./node_modules/.bin/tsx src/index.ts --dev",
+    "build": "tsc",
+    "vercel-build": "echo 'Build complete'"
   },
   "keywords": [],
   "author": "",

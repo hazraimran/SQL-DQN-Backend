@@ -1,17 +1,19 @@
 import dotenv from 'dotenv';
-import { startServer } from './server/server';
+import { createServer } from './server/server';
 
 // Load environment variables
 dotenv.config();
 
-// Get port from environment or use default
-const PORT = Number(process.env.PORT || 3000);
+// Create the server app
+const app = createServer();
 
-// Start the server
-startServer(PORT)
-  .then(() => {
-  })
-  .catch((error) => {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+// Export for Vercel
+export default app;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = Number(process.env.PORT || 3000);
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
   });
+}
