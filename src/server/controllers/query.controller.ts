@@ -11,8 +11,7 @@ export async function queryController(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { userQuery, expected = [] } = req.body;
-    
+    const { userQuery, expected = [], attempts, hintsUsed } = req.body;
     // Validate input
     if (!userQuery || typeof userQuery !== 'string') {
       throw new Error('Invalid userQuery: must provide a SQL query string');
@@ -25,7 +24,7 @@ export async function queryController(
     
     // Process the query
     const { nextState, action, reward, resultFromDB, correct } = 
-      await processUserQuery(userQuery, pool, expected);
+      await processUserQuery(userQuery, pool, expected, attempts, hintsUsed);
     
     // Return success response
     res.json({

@@ -28,7 +28,7 @@ export class SQLEnvironment {
    * stepWithUserInput: the user enters an SQL query. We check the result with 'expectedRows'.
    * The reward is based on mastery, and the environment state is updated.
    */ 
-  public async stepWithUserInput(action: number, expectedRows: any[], rows: string[]): Promise<{
+  public async stepWithUserInput(action: number, expectedRows: any[], rows: string[], attempts: number, hintsUsed: boolean): Promise<{
     nextState: EnvState;
     reward: number;
     correct: boolean;
@@ -38,7 +38,12 @@ export class SQLEnvironment {
     console.log("User query matched:", matched);
     const oldMastery = this.currentState.mastery[action];
 
-    const masteryDelta = matched ? 0.1 : -0.05;
+    //TODO: add hints used, tries to mastery delta
+    const correctness = matched ? 1 : 0.5;
+    const attemptsFactor = 1 - (attempts * 0.1); // Decrease mastery with more attempts
+    const hintsFactor = hintsUsed ? 0.9 : 1; // Decrease mastery if hints were used
+    const masteryDelta = correctness * attemptsFactor * hintsFactor;
+    // const masteryDelta = matched ? 0.1 : -0.05;
 
     // Clamp the mastery in [0,1]
     this.currentState.mastery[action] = Math.max(0.0, Math.min(1, oldMastery + masteryDelta));
