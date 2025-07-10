@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { processUserQuery } from '../../services/agent.service';
 import { getDbPool } from '../../services/database.service';
+import { recordUserAnswer } from '../../services/database.service';
 
 /**
  * Handle SQL query submissions
@@ -11,8 +12,7 @@ export async function queryController(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { userQuery, expected = [] } = req.body;
-    
+    const { userQuery, expected = [], attempts, hintsUsed, questionId } = req.body;
     // Validate input
     if (!userQuery || typeof userQuery !== 'string') {
       throw new Error('Invalid userQuery: must provide a SQL query string');
@@ -25,7 +25,16 @@ export async function queryController(
     
     // Process the query
     const { nextState, action, reward, resultFromDB, correct } = 
-      await processUserQuery(userQuery, pool, expected);
+      await processUserQuery(userQuery, pool, expected, attempts, hintsUsed);
+    
+    // Record the answer
+    await recordUserAnswer(pool, {
+      questionId,
+      userQuery,
+      isCorrect: correct,
+      attempts,
+      hintsUsed
+    });
     
     // Return success response
     res.json({

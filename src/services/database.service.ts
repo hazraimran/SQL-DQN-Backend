@@ -17,9 +17,9 @@ export function getDbConfig(): DbConfig {
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.DB_PORT || 5432),
     database: process.env.DB_DATABASE || 'matrix_sql',
-    ssl: {
-      rejectUnauthorized: false // 开发环境设置为 false，生产环境建议设置为 true
-    }
+    // ssl: {
+    //   rejectUnauthorized: false // 开发环境设置为 false，生产环境建议设置为 true
+    // }
   };
 }
 
@@ -57,5 +57,40 @@ export async function closeDbPool(): Promise<void> {
   if (pool) {
     await pool.end();
     pool = null;
+  }
+}
+
+/**
+ * Record a user's answer in the database
+ */
+export async function recordUserAnswer(
+  pool: pg.Pool,
+  {
+    questionId,
+    userQuery,
+    isCorrect,
+    attempts,
+    hintsUsed
+  }: {
+    questionId: number;
+    userQuery: string;
+    isCorrect: boolean;
+    attempts: number;
+    hintsUsed: boolean;
+  }
+): Promise<void> {
+  const query = `
+    INSERT INTO user_answers (question_id, user_query, is_correct, attempts, hints_used)
+    VALUES ($1, $2, $3, $4, $5)
+  `;
+  const values = [questionId, userQuery, isCorrect, attempts, hintsUsed];
+
+  try {
+    await pool.query(query, values);
+    console.log('User answer recorded successfully.');
+  } catch (error) {
+    console.error('Error recording user answer:', error);
+    // Depending on requirements, you might want to re-throw the error
+    // or handle it gracefully without crashing the app.
   }
 }
