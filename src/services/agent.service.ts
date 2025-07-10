@@ -22,15 +22,16 @@ function generateTrainingData(numQueryTypes: number): void {
     const pythonScriptPath = path.resolve('src/resources/data_generator.py');
     
     // Execute Python script with numQueryTypes as argument
-    const result = execSync(`python ${pythonScriptPath} ${numQueryTypes}`, {
+    const result = execSync(`python3 ${pythonScriptPath} ${numQueryTypes}`, {
       encoding: 'utf-8',
       cwd: path.resolve('src/resources')
     });
     
     console.log(result);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Failed to generate training data:', error);
-    throw new Error(`Training data generation failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new Error(`Training data generation failed: ${errorMessage}`);
   }
 }
 
