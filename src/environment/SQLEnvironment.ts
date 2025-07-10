@@ -10,14 +10,14 @@ export class SQLEnvironment {
     private pool: Pool
   ) {
     this.currentState = {
-      mastery: new Array(numQueries).fill(0.6),
+      mastery: new Array(numQueries).fill(0.2),
       done: false
     };
   }
 
   public reset(): void {
     this.currentState.done = false;
-    this.currentState.mastery = this.currentState.mastery.map(() => 0.6);
+    this.currentState.mastery = this.currentState.mastery.map(() => 0.2);
   }
 
   public getState(): EnvState {
@@ -38,12 +38,23 @@ export class SQLEnvironment {
     console.log("User query matched:", matched);
     const oldMastery = this.currentState.mastery[action];
 
-    //TODO: add hints used, tries to mastery delta
-    const correctness = matched ? 1 : 0.5;
-    const attemptsFactor = 1 - (attempts * 0.1); // Decrease mastery with more attempts
-    const hintsFactor = hintsUsed ? 0.9 : 1; // Decrease mastery if hints were used
-    const masteryDelta = correctness * attemptsFactor * hintsFactor;
-    // const masteryDelta = matched ? 0.1 : -0.05;
+    let masteryDelta = 0.02; // default
+
+    if (matched) {
+      if (attempts === 0) {
+        masteryDelta = 0.1;
+      } else if (attempts === 1) {
+        masteryDelta = 0.07;
+      } else if (attempts === 2) {
+        masteryDelta = 0.04;
+      }
+      // Subtract 0.02 if hint is used, but don't go below 0.02
+      if (hintsUsed) {
+        masteryDelta = Math.max(0.02, masteryDelta - 0.02);
+      }
+    } else {
+      masteryDelta = 0.02; // incorrect answer, minimal progress
+    }
 
     // Clamp the mastery in [0,1]
     this.currentState.mastery[action] = Math.max(0.0, Math.min(1, oldMastery + masteryDelta));
