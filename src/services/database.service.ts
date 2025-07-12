@@ -16,10 +16,10 @@ export function getDbConfig(): DbConfig {
     password: process.env.DB_PASSWORD || '',
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.DB_PORT || 5432),
-    database: process.env.DB_DATABASE || 'matrix_sql',
-    // ssl: {
-    //   rejectUnauthorized: false // 开发环境设置为 false，生产环境建议设置为 true
-    // }
+    database: process.env.DB_DATABASE || 'postgres',
+    ssl: {
+      rejectUnauthorized: false // 开发环境设置为 false，生产环境建议设置为 true
+    }
   };
 }
 
