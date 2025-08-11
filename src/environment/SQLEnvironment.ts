@@ -10,14 +10,14 @@ export class SQLEnvironment {
     private pool: Pool
   ) {
     this.currentState = {
-      mastery: new Array(numQueries).fill(0.6),
+      mastery: new Array(numQueries).fill(0.2),
       done: false
     };
   }
 
   public reset(): void {
     this.currentState.done = false;
-    this.currentState.mastery = this.currentState.mastery.map(() => 0.6);
+    this.currentState.mastery = this.currentState.mastery.map(() => 0.2);
   }
 
   public getState(): EnvState {
@@ -28,7 +28,7 @@ export class SQLEnvironment {
    * stepWithUserInput: the user enters an SQL query. We check the result with 'expectedRows'.
    * The reward is based on mastery, and the environment state is updated.
    */ 
-  public async stepWithUserInput(action: number, expectedRows: any[], rows: string[]): Promise<{
+  public async stepWithUserInput(action: number, expectedRows: any[], rows: string[], attempts: number, hintsUsed: boolean): Promise<{
     nextState: EnvState;
     reward: number;
     correct: boolean;
@@ -38,7 +38,23 @@ export class SQLEnvironment {
     console.log("User query matched:", matched);
     const oldMastery = this.currentState.mastery[action];
 
-    const masteryDelta = matched ? 0.1 : -0.05;
+    let masteryDelta = 0.02; // default
+
+    if (matched) {
+      if (attempts === 0) {
+        masteryDelta = 0.1;
+      } else if (attempts === 1) {
+        masteryDelta = 0.07;
+      } else if (attempts === 2) {
+        masteryDelta = 0.04;
+      }
+      // Subtract 0.02 if hint is used, but don't go below 0.02
+      if (hintsUsed) {
+        masteryDelta = Math.max(0.02, masteryDelta - 0.02);
+      }
+    } else {
+      masteryDelta = 0.02; // incorrect answer, minimal progress
+    }
 
     // Clamp the mastery in [0,1]
     this.currentState.mastery[action] = Math.max(0.0, Math.min(1, oldMastery + masteryDelta));

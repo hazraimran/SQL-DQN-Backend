@@ -102,7 +102,9 @@ export function getEnvironment(): SQLEnvironment | null {
 export async function processUserQuery(
   userQuery: string,
   pool: Pool,
-  expected: any[] = []
+  expected: any[] = [],
+  attempts: number,
+  hintsUsed: boolean
 ): Promise<{
   nextState: any;
   action: number;
@@ -124,7 +126,9 @@ export async function processUserQuery(
   const { nextState, reward, correct } = await env.stepWithUserInput(
     action,
     expected,
-    resultFromDB.rows
+    resultFromDB.rows,
+    attempts,
+    hintsUsed
   );
 
   console.log('Mastery from Next state:', nextState.mastery);
